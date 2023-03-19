@@ -33,7 +33,7 @@ function App() {
           </clipPath>
         </defs>
       </svg>
-      <h1 className="capitalize text-hl">cooming soon</h1>
+      <h1 className="capitalize text-hl">coming soon</h1>
     </div>
   );
 }
