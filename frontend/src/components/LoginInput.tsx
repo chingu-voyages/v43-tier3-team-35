@@ -15,7 +15,7 @@ const loginInputVariants = cva(
 );
 
 export interface LoginInputProps
-  extends React.ButtonHTMLAttributes<HTMLInputElement>,
+  extends React.InputHTMLAttributes<HTMLInputElement>,
     VariantProps<typeof loginInputVariants> {
   errorMessage?: string;
 }
