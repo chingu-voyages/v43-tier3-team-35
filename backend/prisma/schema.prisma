@@ -9,3 +9,77 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
+
+model Project {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  owner         User     @relation("owner", fields: [ownerUsername], references: [username])
+  ownerUsername String   @db.ObjectId
+  developers    User[]   @relation("developers", fields: [developerIds], references: [username])
+  developerIds  String[] @db.ObjectId
+  bugs          Bug[]
+  bugIds        String[] @db.ObjectId
+  createdAt     DateTime @default(now())
+  lastUpdated   DateTime @default(now())
+}
+
+model User {
+  username           String    @id @default(auto()) @map("_id") @db.ObjectId
+  email              String    @unique
+  password           String
+  avatarUrl          String
+  ownedProjects      Project[] @relation("owner")
+  ownedProjectIds    String[]  @db.ObjectId
+  assignedProjects   Project[] @relation("developers", fields: [assignedProjectIds], references: [id])
+  assignedProjectIds String[]  @db.ObjectId
+  assignedBugs       Bug[]     @relation("assignedBugs")
+  assignedBugIds     String[]  @db.ObjectId
+  comments           Comment[]
+  commentIds         String[]  @db.ObjectId
+  reportedBugs       Bug[]     @relation("reportedBugs")
+  reportedBugsIds    String[]  @db.ObjectId
+}
+
+model Bug {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  summary           String?
+  markdown          String
+  priority          Priority
+  status            Status
+  minutesToComplete Int
+  createdAt         DateTime  @default(now())
+  lastUpdated       DateTime  @default(now())
+  reportingUser     User      @relation("reportedBugs", fields: [reportingUserId], references: [username])
+  reportingUserId   String    @db.ObjectId
+  assignedTo        User      @relation("assignedBugs", fields: [assignedToUserId], references: [username])
+  assignedToUserId  String    @db.ObjectId
+  comments          Comment[]
+  project           Project   @relation(fields: [projectId], references: [id])
+  projectId         String    @db.ObjectId
+}
+
+model Comment {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  author         User     @relation(fields: [authorUsername], references: [username])
+  bug            Bug      @relation(fields: [bugId], references: [id])
+  markdown       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now())
+  authorUsername String   @db.ObjectId
+  bugId          String   @db.ObjectId
+}
+
+enum Priority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum Status {
+  UNASSIGNED
+  INPROGRESS
+  TESTING
+  TODO
+  CLOSED
+}
