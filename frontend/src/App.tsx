@@ -1,3 +1,6 @@
+import { Button } from "./components/Button";
+import { LoginInput } from "./components/LoginInput";
+
 function App() {
   return (
     <div className="w-screen h-screen flex flex-col justify-center items-center bg-gray-900 text-white">
@@ -34,6 +37,8 @@ function App() {
         </defs>
       </svg>
       <h1 className="capitalize text-hl">coming soon</h1>
+      <Button>Login to your account</Button>
+      <LoginInput placeholder="Email address" errorMessage="Can't be empty" />
     </div>
   );
 }

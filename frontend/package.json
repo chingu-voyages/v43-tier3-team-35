@@ -10,14 +10,17 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^4.27.0",
+    "@types/yup": "^0.32.0",
     "class-variance-authority": "^0.4.0",
     "clsx": "^1.2.1",
+    "formik": "^2.2.9",
     "lucide-react": "^0.127.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.9.0",
     "tailwind-merge": "^1.10.0",
-    "tailwindcss-animate": "^1.0.5"
+    "tailwindcss-animate": "^1.0.5",
+    "yup": "^1.0.2"
   },
   "devDependencies": {
     "@types/react": "^18.0.27",

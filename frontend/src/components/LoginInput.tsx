@@ -2,7 +2,7 @@ import { cva } from "class-variance-authority";
 import { forwardRef } from "react";
 import type { VariantProps } from "class-variance-authority";
 const loginInputVariants = cva(
-  "pb-4 pl-4 placeholder:text-opacity-50 focus:border-opacity-100 text-bodym border-b border-opacity-50 outline-none   bg-white bg-opacity-0",
+  "pb-4 pl-4 placeholder:text-opacity-50 focus:border-opacity-100 text-bodym border-b border-opacity-50 hover:border-opacity-100 outline-none   bg-white bg-opacity-0",
   {
     variants: {
       variant: {
@@ -30,7 +30,7 @@ export const LoginInput = forwardRef<HTMLInputElement, LoginInputProps>(
           {...props}
         />
         {variant === "error" && (
-          <span className="text-red-500 text-[0.8125rem] font-light absolute top-0 bottom-0 my-auto h-fit right-0">
+          <span className="text-red-500 bg-gray-800 pl-2 rounded-l-full py-2 text-[0.8125rem] font-light absolute top-0 bottom-0 my-auto h-fit right-0">
             {errorMessage}
           </span>
         )}
