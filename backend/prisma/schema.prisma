@@ -13,31 +13,30 @@ datasource db {
 model Project {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   name          String
-  owner         User     @relation("owner", fields: [ownerUsername], references: [username])
+  owner         User     @relation("owner", fields: [ownerUsername], references: [id])
   ownerUsername String   @db.ObjectId
-  developers    User[]   @relation("developers", fields: [developerIds], references: [username])
+  developers    User[]   @relation("developers", fields: [developerIds], references: [id])
   developerIds  String[] @db.ObjectId
   bugs          Bug[]
   bugIds        String[] @db.ObjectId
   createdAt     DateTime @default(now())
-  lastUpdated   DateTime @default(now())
+  lastUpdated   DateTime @updatedAt
 }
 
 model User {
-  username           String    @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  username           String    @unique @db.ObjectId
   email              String    @unique
   password           String
-  avatarUrl          String
+  avatarUrl          String?
   ownedProjects      Project[] @relation("owner")
   ownedProjectIds    String[]  @db.ObjectId
   assignedProjects   Project[] @relation("developers", fields: [assignedProjectIds], references: [id])
   assignedProjectIds String[]  @db.ObjectId
   assignedBugs       Bug[]     @relation("assignedBugs")
-  assignedBugIds     String[]  @db.ObjectId
   comments           Comment[]
   commentIds         String[]  @db.ObjectId
   reportedBugs       Bug[]     @relation("reportedBugs")
-  reportedBugsIds    String[]  @db.ObjectId
 }
 
 model Bug {
@@ -45,13 +44,13 @@ model Bug {
   summary           String?
   markdown          String
   priority          Priority
-  status            Status
+  status            Status    @default(UNASSIGNED)
   minutesToComplete Int
   createdAt         DateTime  @default(now())
-  lastUpdated       DateTime  @default(now())
-  reportingUser     User      @relation("reportedBugs", fields: [reportingUserId], references: [username])
+  lastUpdated       DateTime  @updatedAt
+  reportingUser     User      @relation("reportedBugs", fields: [reportingUserId], references: [id])
   reportingUserId   String    @db.ObjectId
-  assignedTo        User      @relation("assignedBugs", fields: [assignedToUserId], references: [username])
+  assignedTo        User      @relation("assignedBugs", fields: [assignedToUserId], references: [id])
   assignedToUserId  String    @db.ObjectId
   comments          Comment[]
   project           Project   @relation(fields: [projectId], references: [id])
@@ -64,7 +63,7 @@ model Comment {
   bug            Bug      @relation(fields: [bugId], references: [id])
   markdown       String
   createdAt      DateTime @default(now())
-  updatedAt      DateTime @default(now())
+  lastUpdated    DateTime @updatedAt
   authorUsername String   @db.ObjectId
   bugId          String   @db.ObjectId
 }
