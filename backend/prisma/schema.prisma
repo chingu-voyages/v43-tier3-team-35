@@ -50,8 +50,8 @@ model Bug {
   lastUpdated       DateTime  @updatedAt
   reportingUser     User      @relation("reportedBugs", fields: [reportingUserId], references: [id])
   reportingUserId   String    @db.ObjectId
-  assignedTo        User      @relation("assignedBugs", fields: [assignedToUserId], references: [id])
-  assignedToUserId  String    @db.ObjectId
+  assignedTo        User?     @relation("assignedBugs", fields: [assignedToUserId], references: [id])
+  assignedToUserId  String?   @db.ObjectId
   comments          Comment[]
   project           Project   @relation(fields: [projectId], references: [id])
   projectId         String    @db.ObjectId
