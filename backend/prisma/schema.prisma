@@ -11,23 +11,23 @@ datasource db {
 }
 
 model Project {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
-  owner         User     @relation("owner", fields: [ownerUsername], references: [id])
-  ownerUsername String   @db.ObjectId
-  developers    User[]   @relation("developers", fields: [developerIds], references: [id])
-  developerIds  String[] @db.ObjectId
-  bugs          Bug[]
-  bugIds        String[] @db.ObjectId
-  createdAt     DateTime @default(now())
-  lastUpdated   DateTime @updatedAt
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  owner        User     @relation("owner", fields: [ownerId], references: [id])
+  ownerId      String   @db.ObjectId
+  developers   User[]   @relation("developers", fields: [developerIds], references: [id])
+  developerIds String[] @db.ObjectId
+  bugs         Bug[]
+  bugIds       String[] @db.ObjectId
+  createdAt    DateTime @default(now())
+  lastUpdated  DateTime @updatedAt
 }
 
 model User {
   id                 String    @id @default(auto()) @map("_id") @db.ObjectId
-  username           String    @unique @db.ObjectId
+  username           String    @unique
   email              String    @unique
-  password           String
+  hashedPassword     String
   avatarUrl          String?
   ownedProjects      Project[] @relation("owner")
   ownedProjectIds    String[]  @db.ObjectId
@@ -64,7 +64,7 @@ model Comment {
   markdown       String
   createdAt      DateTime @default(now())
   lastUpdated    DateTime @updatedAt
-  authorUsername String   @db.ObjectId
+  authorUsername String
   bugId          String   @db.ObjectId
 }
 
