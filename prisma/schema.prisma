@@ -6,18 +6,68 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
+    provider          = "postgresql"
     // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
     // Further reading:
     // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
     // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+    url               = env("DATABASE_URL")
+    shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-model Example {
+model Project {
+    id         String   @id @default(cuid())
+    name       String
+    owner      User     @relation("owner", fields: [ownerId], references: [id])
+    ownerId    String
+    developers User[]   @relation("developers")
+    bugs       Bug[]
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+}
+
+model Bug {
+    id                String    @id @default(cuid())
+    summary           String?
+    markdown          String
+    priority          Priority
+    status            Status    @default(UNASSIGNED)
+    minutesToComplete Int?
+    reportingUser     User      @relation("reporting", fields: [reportingUserId], references: [id])
+    reportingUserId   String
+    assignedTo        User?     @relation("assignedTo", fields: [assignedToUserId], references: [id])
+    assignedToUserId  String?
+    comments          Comment[]
+    project           Project   @relation(fields: [projectId], references: [id])
+    projectId         String
+    createdAt         DateTime  @default(now())
+    updatedAt         DateTime  @updatedAt
+}
+
+model Comment {
     id        String   @id @default(cuid())
+    author    User     @relation(fields: [authorId], references: [id])
+    authorId  String
+    Bug       Bug      @relation(fields: [bugId], references: [id])
+    bugId     String
+    markdown  String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+enum Priority {
+    CRITICAL
+    HIGH
+    MEDIUM
+    LOW
+}
+
+enum Status {
+    UNASSIGNED
+    INPROGRESS
+    TESTING
+    TODO
+    CLOSED
 }
 
 // Necessary for Next auth
@@ -27,12 +77,12 @@ model Account {
     type              String
     provider          String
     providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
     expires_at        Int?
     token_type        String?
     scope             String?
-    id_token          String? // @db.Text
+    id_token          String? @db.Text
     session_state     String?
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -48,13 +98,19 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
+    id                  String    @id @default(cuid())
+    name                String?
+    username            String    @unique
+    email               String?   @unique
+    emailVerified       DateTime?
+    image               String?
+    accounts            Account[]
+    sessions            Session[]
+    ownedProjects       Project[] @relation("owner")
+    developerOnProjects Project[] @relation("developers")
+    reportedBugs        Bug[]     @relation("reporting")
+    assignedBugs        Bug[]     @relation("assignedTo")
+    comments            Comment[]
 }
 
 model VerificationToken {
