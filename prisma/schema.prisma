@@ -28,7 +28,7 @@ model Project {
 
 model Bug {
     id                String    @id @default(cuid())
-    summary           String?
+    title             String
     markdown          String
     priority          Priority
     status            Status    @default(UNASSIGNED)
