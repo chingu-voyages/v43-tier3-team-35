@@ -1,12 +1,7 @@
-import { Priority, Status } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-} from "~/server/api/trpc";
-import { prisma } from "~/server/db";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 const PRIORITY = ["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const;
 const STATUS = [
@@ -17,14 +12,7 @@ const STATUS = [
   "CLOSED",
 ] as const;
 export const projectRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-  getProjectById: protectedProcedure
+  getDetailsById: protectedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -41,9 +29,10 @@ export const projectRouter = createTRPCRouter({
           status = ["CLOSED", "INPROGRESS", "TESTING", "TODO", "UNASSIGNED"],
         },
       }) => {
-        const projectData = await ctx.prisma.project.findUnique({
+        const data = await ctx.prisma.project.findUnique({
           where: { id },
           select: {
+            name: true,
             owner: { select: { id: true, name: true, image: true } },
             bugs: {
               select: {
@@ -64,20 +53,18 @@ export const projectRouter = createTRPCRouter({
             developers: { select: { id: true, name: true, image: true } },
           },
         });
+        if (!data) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+          });
+        }
         const userId = ctx.session.user.id;
         if (
-          projectData?.owner.id === userId ||
-          projectData?.developers.some((dev) => dev.id === userID)
+          data?.owner.id === userId ||
+          data?.developers.some((dev) => dev.id === userId)
         )
-          return projectData;
-        return Error("unauthorized");
+          return data;
+        throw new TRPCError({ code: "UNAUTHORIZED" });
       }
     ),
-  getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.project.findMany();
-  }),
-
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
-  }),
 });
