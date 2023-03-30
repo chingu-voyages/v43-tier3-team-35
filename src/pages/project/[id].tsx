@@ -11,6 +11,7 @@ import {
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
 import formatDistance from "date-fns/formatDistance";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/Avatar";
 const Priorities = [
   {
     value: "CRITICAL" as const,
@@ -139,14 +140,10 @@ export default function ProjectDetails() {
           {data.developers.map((developer) => (
             <li key={developer.id} className="flex justify-between text-bodym">
               <div className="flex">
-                {/* TODO REPLACE WITH AVATAR COMPONENT */}
-                <Image
-                  src={developer?.image ?? ""}
-                  width={28}
-                  height={28}
-                  className="mr-4 rounded-full"
-                  alt={developer?.name ?? ""}
-                />{" "}
+                <Avatar className="mr-4 h-6 w-6">
+                  <AvatarImage src={developer?.image ?? ""} />
+                  <AvatarFallback>{developer.name}</AvatarFallback>
+                </Avatar>
                 {developer.name}
               </div>
               <PlusIcon className="h-6 w-6 cursor-pointer" />
@@ -235,18 +232,14 @@ function BugCard({
       <p className="mb-4 text-sm text-white text-opacity-75">{description}</p>
       <div className="flex justify-between">
         {/* TODO MAKE STATUS DROPDOWN */}
-        <div className="rounded-[4px] bg-slate-900 py-2 px-3 text-sm capitalize">
+        <div className="flex items-center justify-center rounded-[4px] bg-slate-900 py-0.5 px-3 text-sm capitalize">
           unassigned
         </div>
         {assignee ? (
-          <Image
-            src={assignee?.image ?? ""}
-            width={28}
-            height={28}
-            className="mr-4 rounded-full"
-            alt={assignee?.name ?? ""}
-            title={assignee?.name ?? ""}
-          />
+          <Avatar title={assignee?.name ?? "anonymous"}>
+            <AvatarImage src={assignee?.image ?? ""} />
+            <AvatarFallback>{assignee.name}</AvatarFallback>
+          </Avatar>
         ) : (
           <UserPlusIcon className="h-6 w-6" />
         )}
