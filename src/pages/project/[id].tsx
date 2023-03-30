@@ -4,7 +4,6 @@ import type { ReactNode, Dispatch, SetStateAction } from "react";
 import { api } from "../../utils/api";
 import { Status } from "@prisma/client";
 import type { Priority } from "@prisma/client";
-import Image from "next/image";
 import {
   PlusIcon,
   ShieldExclamationIcon,
@@ -12,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import formatDistance from "date-fns/formatDistance";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/Avatar";
+import StatusDropdown from "~/components/StatusDropdown";
 const Priorities = [
   {
     value: "CRITICAL" as const,
@@ -75,9 +75,11 @@ export default function ProjectDetails() {
           </button>
         </div>
         {data.bugs.length > 0 ? (
-          <div className="mt-4 grid grid-cols-3 gap-x-7">
+          <div className="mt-4 grid grid-cols-3 gap-x-5">
             {data.bugs.map((bug) => (
               <BugCard
+                id={bug.id}
+                projectOwnerId={data.owner.id}
                 title={bug.title}
                 description={bug.markdown}
                 author={bug.reportingUser?.name ?? "anonymous"}
@@ -197,16 +199,20 @@ const StatusButton = forwardRef<HTMLButtonElement, StatusButtonProps>(
 StatusButton.displayName = "Status Button";
 
 type BugCardProps = {
+  id: string;
   title: string;
   author: string;
-  assignee?: { name: string | null; image: string | null } | null;
+  assignee?: { id: string; name: string | null; image: string | null } | null;
   description: string;
   createdAt: Date;
   priority: { value: Priority; stroke: string };
   status: Status;
   n_comments: number;
+  projectOwnerId: string;
 };
 function BugCard({
+  id,
+  projectOwnerId,
   title,
   author,
   assignee,
@@ -217,24 +223,28 @@ function BugCard({
   status,
 }: BugCardProps) {
   return (
-    <div className="rounded-md bg-gray-800 p-3">
-      <div className="flex justify-between">
-        <h3 className="text-hs font-medium line-clamp-1">{title}</h3>
-        <ShieldExclamationIcon
-          title={priority.value}
-          className={`h-8 w-8 ${priority.stroke} `}
-        />
-      </div>
-      <p className="mb-2 mt-0.5 text-xs font-light text-white text-opacity-75">
-        {formatDistance(createdAt, new Date(), { addSuffix: true })} - Reported
-        by {author} - {n_comments} Comments
-      </p>
-      <p className="mb-4 text-sm text-white text-opacity-75">{description}</p>
-      <div className="flex justify-between">
-        {/* TODO MAKE STATUS DROPDOWN */}
-        <div className="flex items-center justify-center rounded-[4px] bg-slate-900 py-0.5 px-3 text-sm capitalize">
-          unassigned
+    <div className="flex flex-col justify-between rounded-md bg-gray-800 py-3 px-4">
+      <div className="">
+        <div className="flex justify-between">
+          <h3 className="text-hs font-medium line-clamp-1">{title}</h3>
+          <ShieldExclamationIcon
+            title={priority.value}
+            className={`h-8 w-8 ${priority.stroke} `}
+          />
         </div>
+        <p className="mb-2 mt-0.5 text-xs font-light text-white text-opacity-75">
+          {formatDistance(createdAt, new Date(), { addSuffix: true })} -
+          Reported by {author} - {n_comments} Comments
+        </p>
+      </div>
+      <p className="mb-4 text-sm text-white text-opacity-75">{description}</p>
+      <div className="flex items-center justify-between">
+        <StatusDropdown
+          bugId={id}
+          status={status}
+          assigneId={assignee?.id}
+          projectOwnerId={projectOwnerId}
+        />
         {assignee ? (
           <Avatar title={assignee?.name ?? "anonymous"}>
             <AvatarImage src={assignee?.image ?? ""} />

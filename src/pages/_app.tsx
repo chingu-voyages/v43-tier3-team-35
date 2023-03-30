@@ -6,7 +6,7 @@ import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
 
-const quicksand = Quicksand({
+export const quicksand = Quicksand({
   subsets: ["latin"],
   variable: "--font-quicksand",
 });
@@ -16,11 +16,20 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   return (
-    <SessionProvider session={session}>
-      <div className={`${quicksand.variable} bg-gray-900 font-sans text-white`}>
-        <Component {...pageProps} />
-      </div>
-    </SessionProvider>
+    <>
+      <style jsx global>{`
+        html {
+          font-family: ${quicksand.style.fontFamily};
+        }
+      `}</style>
+      <SessionProvider session={session}>
+        <div
+          className={`${quicksand.variable} bg-gray-900 font-sans text-white`}
+        >
+          <Component {...pageProps} />
+        </div>
+      </SessionProvider>{" "}
+    </>
   );
 };
 
