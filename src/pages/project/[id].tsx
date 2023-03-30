@@ -10,11 +10,24 @@ import {
   ShieldExclamationIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
+import formatDistance from "date-fns/formatDistance";
 const Priorities = [
-  { value: "CRITICAL" as const, color: "stroke-red-500" },
-  { value: "HIGH" as const, color: "stroke-orange-500" },
-  { value: "MEDIUM" as const, color: "stroke-yellow-500" },
-  { value: "LOW" as const, color: "stroke-white" },
+  {
+    value: "CRITICAL" as const,
+    stroke: "stroke-red-500",
+    background: "bg-red-500",
+  },
+  {
+    value: "HIGH" as const,
+    stroke: "stroke-orange-500",
+    background: "bg-orange-500",
+  },
+  {
+    value: "MEDIUM" as const,
+    stroke: "stroke-yellow-500",
+    background: "bg-yellow-500",
+  },
+  { value: "LOW" as const, stroke: "stroke-white", background: "bg-white" },
 ];
 type selectedStatusType = (
   | "UNASSIGNED"
@@ -67,10 +80,14 @@ export default function ProjectDetails() {
                 title={bug.title}
                 description={bug.markdown}
                 author={bug.reportingUser?.name ?? "anonymous"}
+                assignee={bug.assignedTo}
                 n_comments={bug._count.comments}
                 createdAt={bug.createdAt}
                 priority={
-                  Priorities.find((item) => item.value === bug.priority)!
+                  Priorities?.find((item) => item.value === bug.priority) ?? {
+                    value: "LOW",
+                    stroke: "stroke-white",
+                  }
                 }
                 status={bug.status}
                 key={bug.id}
@@ -107,13 +124,13 @@ export default function ProjectDetails() {
           ))}
         </SidebarCard>
         <SidebarCard title="Bug Priority" className="mb-6 space-y-1">
-          {Priorities.map(({ value, color }) => (
+          {Priorities.map(({ value, background }) => (
             <PriorityButton
               count={data.bugs.filter((bug) => bug.priority === value).length}
               isSelected={selectedPriorities.includes(value)}
               setSelectedPriorities={setSelectedPriorities}
               value={value}
-              color={color}
+              color={background}
               key={value}
             />
           ))}
@@ -185,15 +202,17 @@ StatusButton.displayName = "Status Button";
 type BugCardProps = {
   title: string;
   author: string;
+  assignee?: { name: string | null; image: string | null } | null;
   description: string;
   createdAt: Date;
-  priority: { value: Priority; color: string };
+  priority: { value: Priority; stroke: string };
   status: Status;
   n_comments: number;
 };
 function BugCard({
   title,
   author,
+  assignee,
   createdAt,
   description,
   n_comments,
@@ -206,12 +225,12 @@ function BugCard({
         <h3 className="text-hs font-medium line-clamp-1">{title}</h3>
         <ShieldExclamationIcon
           title={priority.value}
-          className={`h-8 w-8 ${priority.color} `}
+          className={`h-8 w-8 ${priority.stroke} `}
         />
       </div>
       <p className="mb-2 mt-0.5 text-xs font-light text-white text-opacity-75">
-        {/* TODO SWITCH DATE TO THIS FORMAT */}9 minutes ago - Reported by{" "}
-        {author} - {n_comments} Comments
+        {formatDistance(createdAt, new Date(), { addSuffix: true })} - Reported
+        by {author} - {n_comments} Comments
       </p>
       <p className="mb-4 text-sm text-white text-opacity-75">{description}</p>
       <div className="flex justify-between">
@@ -219,7 +238,18 @@ function BugCard({
         <div className="rounded-[4px] bg-slate-900 py-2 px-3 text-sm capitalize">
           unassigned
         </div>
-        <UserPlusIcon className="h-6 w-6" />
+        {assignee ? (
+          <Image
+            src={assignee?.image ?? ""}
+            width={28}
+            height={28}
+            className="mr-4 rounded-full"
+            alt={assignee?.name ?? ""}
+            title={assignee?.name ?? ""}
+          />
+        ) : (
+          <UserPlusIcon className="h-6 w-6" />
+        )}
       </div>
     </div>
   );
@@ -238,9 +268,9 @@ function NoResultsSVG() {
         <path
           d="M62.8268 19.7428C33.7105 19.7372 10.1005 43.3321 10.0874 72.4484C10.0743 101.565 33.6632 125.181 62.7794 125.201C91.8957 125.222 115.518 101.639 115.546 72.5228C115.562 58.5303 110.015 45.1053 100.126 35.2054C90.2379 25.3055 76.8193 19.7428 62.8268 19.7428Z"
           stroke="#8B8A8A"
-          stroke-width="1.04545"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          strokeWidth="1.04545"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
         <ellipse
           cx="90.4653"
