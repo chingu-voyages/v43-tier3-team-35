@@ -3,12 +3,18 @@ import { forwardRef, useState } from "react";
 import type { ReactNode, Dispatch, SetStateAction } from "react";
 import { api } from "../../utils/api";
 import { Status } from "@prisma/client";
-
+import type { Priority } from "@prisma/client";
+import Image from "next/image";
+import {
+  PlusIcon,
+  ShieldExclamationIcon,
+  UserPlusIcon,
+} from "@heroicons/react/24/outline";
 const Priorities = [
-  { value: "CRITICAL" as const, color: "bg-red-500" },
-  { value: "HIGH" as const, color: "bg-orange-500" },
-  { value: "MEDIUM" as const, color: "bg-yellow-500" },
-  { value: "LOW" as const, color: "bg-white" },
+  { value: "CRITICAL" as const, color: "stroke-red-500" },
+  { value: "HIGH" as const, color: "stroke-orange-500" },
+  { value: "MEDIUM" as const, color: "stroke-yellow-500" },
+  { value: "LOW" as const, color: "stroke-white" },
 ];
 type selectedStatusType = (
   | "UNASSIGNED"
@@ -54,7 +60,24 @@ export default function ProjectDetails() {
             Report New Bug
           </button>
         </div>
-        {data.bugs.length === 0 && (
+        {data.bugs.length > 0 ? (
+          <div className="mt-4 grid grid-cols-3 gap-x-7">
+            {data.bugs.map((bug) => (
+              <BugCard
+                title={bug.title}
+                description={bug.markdown}
+                author={bug.reportingUser?.name ?? "anonymous"}
+                n_comments={bug._count.comments}
+                createdAt={bug.createdAt}
+                priority={
+                  Priorities.find((item) => item.value === bug.priority)!
+                }
+                status={bug.status}
+                key={bug.id}
+              />
+            ))}
+          </div>
+        ) : (
           <div className="mt-6 flex h-[80%] flex-col items-center justify-center rounded-2xl bg-slate-800 text-center">
             <NoResultsSVG />
 
@@ -83,7 +106,7 @@ export default function ProjectDetails() {
             </li>
           ))}
         </SidebarCard>
-        <SidebarCard title="Bug Priority" className="space-y-1">
+        <SidebarCard title="Bug Priority" className="mb-6 space-y-1">
           {Priorities.map(({ value, color }) => (
             <PriorityButton
               count={data.bugs.filter((bug) => bug.priority === value).length}
@@ -93,6 +116,24 @@ export default function ProjectDetails() {
               color={color}
               key={value}
             />
+          ))}
+        </SidebarCard>
+        <SidebarCard title="Developers" className="space-y-3">
+          {data.developers.map((developer) => (
+            <li key={developer.id} className="flex justify-between text-bodym">
+              <div className="flex">
+                {/* TODO REPLACE WITH AVATAR COMPONENT */}
+                <Image
+                  src={developer?.image ?? ""}
+                  width={28}
+                  height={28}
+                  className="mr-4 rounded-full"
+                  alt={developer?.name ?? ""}
+                />{" "}
+                {developer.name}
+              </div>
+              <PlusIcon className="h-6 w-6 cursor-pointer" />
+            </li>
           ))}
         </SidebarCard>
       </div>
@@ -140,6 +181,49 @@ const StatusButton = forwardRef<HTMLButtonElement, StatusButtonProps>(
 );
 
 StatusButton.displayName = "Status Button";
+
+type BugCardProps = {
+  title: string;
+  author: string;
+  description: string;
+  createdAt: Date;
+  priority: { value: Priority; color: string };
+  status: Status;
+  n_comments: number;
+};
+function BugCard({
+  title,
+  author,
+  createdAt,
+  description,
+  n_comments,
+  priority,
+  status,
+}: BugCardProps) {
+  return (
+    <div className="rounded-md bg-gray-800 p-3">
+      <div className="flex justify-between">
+        <h3 className="text-hs font-medium line-clamp-1">{title}</h3>
+        <ShieldExclamationIcon
+          title={priority.value}
+          className={`h-8 w-8 ${priority.color} `}
+        />
+      </div>
+      <p className="mb-2 mt-0.5 text-xs font-light text-white text-opacity-75">
+        {/* TODO SWITCH DATE TO THIS FORMAT */}9 minutes ago - Reported by{" "}
+        {author} - {n_comments} Comments
+      </p>
+      <p className="mb-4 text-sm text-white text-opacity-75">{description}</p>
+      <div className="flex justify-between">
+        {/* TODO MAKE STATUS DROPDOWN */}
+        <div className="rounded-[4px] bg-slate-900 py-2 px-3 text-sm capitalize">
+          unassigned
+        </div>
+        <UserPlusIcon className="h-6 w-6" />
+      </div>
+    </div>
+  );
+}
 
 function NoResultsSVG() {
   return (
