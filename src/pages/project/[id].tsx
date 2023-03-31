@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { forwardRef, useState } from "react";
+import { createContext, forwardRef, useState, useContext } from "react";
 import type { ReactNode, Dispatch, SetStateAction } from "react";
 import { api } from "../../utils/api";
 import { Status } from "@prisma/client";
@@ -11,7 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import formatDistance from "date-fns/formatDistance";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/Avatar";
-import StatusDropdown from "~/components/StatusDropdown";
+import StatusDropdown from "~/components/project-details/StatusDropdown";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/Dialog";
+import { useSession } from "next-auth/react";
+
 const Priorities = [
   {
     value: "CRITICAL" as const,
@@ -44,8 +46,26 @@ type selectedStatusType = (
   | "TESTING"
   | "CLOSED"
 )[];
-
 type selectedPrioritiesType = ("CRITICAL" | "HIGH" | "MEDIUM" | "LOW")[];
+
+type ProjectContextType = {
+  queryVariables: {
+    id: string;
+    status: selectedStatusType;
+    priority: selectedPrioritiesType;
+  };
+  projectOwnerId: string;
+  projectDevelopers: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  }[];
+};
+
+export const ProjectContext = createContext<ProjectContextType>(
+  {} as ProjectContextType
+);
+
 export default function ProjectDetails() {
   const {
     query: { id },
@@ -60,109 +80,119 @@ export default function ProjectDetails() {
   ]);
   const [selectedPriorities, setSelectedPriorities] =
     useState<selectedPrioritiesType>(["CRITICAL", "HIGH", "MEDIUM", "LOW"]);
+  const queryVariables = {
+    id: id as string,
+    status: selectedStatus,
+    priority: selectedPriorities,
+  };
   const { data, isLoading, isError } = api.project.getDetailsById.useQuery(
-    {
-      id: id as string,
-      status: selectedStatus,
-      priority: selectedPriorities,
-    },
+    queryVariables,
     { keepPreviousData: true, enabled: isReady }
   );
   if (isLoading) return <div className="">loading</div>;
 
   if (isError) return <div className="">error</div>;
   return (
-    <main className="grid min-h-screen grid-cols-5 gap-x-8 p-11">
-      <div className="col-span-4">
-        <div className="flex items-center justify-between rounded-xl bg-slate-800 px-6 py-5">
-          <div className="">
-            <h1 className="text-hm font-medium">{data.name}</h1>
+    <ProjectContext.Provider
+      value={{
+        projectDevelopers: data.developers,
+        queryVariables,
+        projectOwnerId: data.owner.id,
+      }}
+    >
+      <main className="grid min-h-screen grid-cols-5 gap-x-8 p-11">
+        <div className="col-span-4">
+          <div className="flex items-center justify-between rounded-xl bg-slate-800 px-6 py-5">
+            <div className="">
+              <h1 className="text-hm font-medium">{data.name}</h1>
+            </div>
+            <button className="rounded-md bg-blue-900 px-5 py-3 text-bodym font-medium text-white transition duration-300 hover:bg-white hover:text-blue-900">
+              Report New Bug
+            </button>
           </div>
-          <button className="rounded-md bg-blue-900 px-5 py-3 text-bodym font-medium text-white transition duration-300 hover:bg-white hover:text-blue-900">
-            Report New Bug
-          </button>
-        </div>
-        {data.bugs.length > 0 ? (
-          <div className="mt-4 grid grid-cols-3 gap-x-5 gap-y-5">
-            {data.bugs.map((bug) => (
-              <BugCard
-                projectDevelopers={data.developers}
-                id={bug.id}
-                projectOwnerId={data.owner.id}
-                title={bug.title}
-                description={bug.markdown}
-                author={bug.reportingUser?.name ?? "anonymous"}
-                assignee={bug.assignedTo}
-                n_comments={bug._count.comments}
-                createdAt={bug.createdAt}
-                priority={
-                  Priorities?.find((item) => item.value === bug.priority) ?? {
-                    value: "LOW",
-                    stroke: "stroke-white",
+          {data.bugs.length > 0 ? (
+            <div className="mt-4 grid grid-cols-3 gap-x-5 gap-y-5">
+              {data.bugs.map((bug) => (
+                <BugCard
+                  id={bug.id}
+                  title={bug.title}
+                  description={bug.markdown}
+                  author={bug.reportingUser?.name ?? "anonymous"}
+                  assignee={bug.assignedTo}
+                  n_comments={bug._count.comments}
+                  createdAt={bug.createdAt}
+                  priority={
+                    Priorities?.find((item) => item.value === bug.priority) ?? {
+                      value: "LOW",
+                      stroke: "stroke-white",
+                    }
                   }
-                }
-                status={bug.status}
-                key={bug.id}
+                  status={bug.status}
+                  key={bug.id}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-6 flex h-[80%] flex-col items-center justify-center rounded-2xl bg-slate-800 text-center">
+              <NoResultsSVG />
+
+              <h2 className="mt-6 mb-3 text-hm font-semibold">
+                No Bugs Here: Keep up the Great Work!
+              </h2>
+              <p className="max-w-md text-sm text-white text-opacity-70">
+                No bugs match the selected filters for this project at the
+                moment. Keep up the good work, and don&apos;t hesitate to adjust
+                the filters or report any new bugs that may arise.
+              </p>
+            </div>
+          )}
+        </div>
+        <div className="">
+          <SidebarCard title="Bug Status" className="flex flex-wrap gap-2">
+            {Object.values(Status).map((item) => (
+              <li key={item}>
+                <StatusButton
+                  statusValue={item}
+                  setSelectedStatus={setSelectedStatus}
+                  isSelected={selectedStatus.includes(item)}
+                >
+                  {item.toLowerCase()}
+                </StatusButton>
+              </li>
+            ))}
+          </SidebarCard>
+          <SidebarCard title="Bug Priority" className="space-y-1">
+            {Priorities.map(({ value, background }) => (
+              <PriorityButton
+                count={data.bugs.filter((bug) => bug.priority === value).length}
+                isSelected={selectedPriorities.includes(value)}
+                setSelectedPriorities={setSelectedPriorities}
+                value={value}
+                color={background}
+                key={value}
               />
             ))}
-          </div>
-        ) : (
-          <div className="mt-6 flex h-[80%] flex-col items-center justify-center rounded-2xl bg-slate-800 text-center">
-            <NoResultsSVG />
-
-            <h2 className="mt-6 mb-3 text-hm font-semibold">
-              No Bugs Here: Keep up the Great Work!
-            </h2>
-            <p className="max-w-md text-sm text-white text-opacity-70">
-              No bugs match the selected filters for this project at the moment.
-              Keep up the good work, and don&apos;t hesitate to adjust the
-              filters or report any new bugs that may arise.
-            </p>
-          </div>
-        )}
-      </div>
-      <div className="">
-        <SidebarCard title="Bug Status" className="flex flex-wrap gap-2">
-          {Object.values(Status).map((item) => (
-            <li key={item}>
-              <StatusButton
-                statusValue={item}
-                setSelectedStatus={setSelectedStatus}
-                isSelected={selectedStatus.includes(item)}
+          </SidebarCard>
+          <SidebarCard title="Developers" className="space-y-3">
+            {data.developers.map((developer) => (
+              <li
+                key={developer.id}
+                className="flex justify-between text-bodym"
               >
-                {item.toLowerCase()}
-              </StatusButton>
-            </li>
-          ))}
-        </SidebarCard>
-        <SidebarCard title="Bug Priority" className="space-y-1">
-          {Priorities.map(({ value, background }) => (
-            <PriorityButton
-              count={data.bugs.filter((bug) => bug.priority === value).length}
-              isSelected={selectedPriorities.includes(value)}
-              setSelectedPriorities={setSelectedPriorities}
-              value={value}
-              color={background}
-              key={value}
-            />
-          ))}
-        </SidebarCard>
-        <SidebarCard title="Developers" className="space-y-3">
-          {data.developers.map((developer) => (
-            <li key={developer.id} className="flex justify-between text-bodym">
-              <div className="flex">
-                <Avatar className="mr-4 h-6 w-6">
-                  <AvatarImage src={developer?.image ?? ""} />
-                  <AvatarFallback>{developer.name}</AvatarFallback>
-                </Avatar>
-                {developer.name}
-              </div>
-              <PlusIcon className="h-6 w-6 cursor-pointer" />
-            </li>
-          ))}
-        </SidebarCard>
-      </div>
-    </main>
+                <div className="flex">
+                  <Avatar className="mr-4 h-6 w-6">
+                    <AvatarImage src={developer?.image ?? ""} />
+                    <AvatarFallback>{developer.name}</AvatarFallback>
+                  </Avatar>
+                  {developer.name}
+                </div>
+                <PlusIcon className="h-6 w-6 cursor-pointer" />
+              </li>
+            ))}
+          </SidebarCard>
+        </div>
+      </main>
+    </ProjectContext.Provider>
   );
 }
 
@@ -212,22 +242,15 @@ type BugCardProps = {
   title: string;
   author: string;
   assignee?: { id: string; name: string | null; image: string | null } | null;
-  projectDevelopers: {
-    id: string;
-    name: string | null;
-    image: string | null;
-  }[];
+
   description: string;
   createdAt: Date;
   priority: { value: Priority; stroke: string };
   status: Status;
   n_comments: number;
-  projectOwnerId: string;
 };
 function BugCard({
-  projectDevelopers,
   id,
-  projectOwnerId,
   title,
   author,
   assignee,
@@ -237,6 +260,8 @@ function BugCard({
   priority,
   status,
 }: BugCardProps) {
+  const { data: userData } = useSession();
+  const { projectOwnerId } = useContext(ProjectContext);
   return (
     <div className="flex flex-col justify-between rounded-md bg-gray-800 py-3 px-4">
       <div className="">
@@ -255,25 +280,21 @@ function BugCard({
       <p className="mb-4 text-sm text-white text-opacity-75">{description}</p>
       <div className="flex items-center justify-between">
         <StatusDropdown
+          bugTitle={title}
           bugId={id}
           status={status}
           assigneId={assignee?.id}
-          projectOwnerId={projectOwnerId}
         />
         {assignee ? (
           <Avatar title={assignee?.name ?? "anonymous"}>
             <AvatarImage src={assignee?.image ?? ""} />
             <AvatarFallback>{assignee.name}</AvatarFallback>
           </Avatar>
-        ) : (
-          <AssignBugToDev
-            projectDevelopers={projectDevelopers}
-            bugTitle={title}
-            bugId={id}
-          >
+        ) : userData?.user.id === projectOwnerId ? (
+          <AssignBugToDev bugTitle={title} bugId={id}>
             <UserPlusIcon className="h-6 w-6" />
           </AssignBugToDev>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -281,57 +302,43 @@ function BugCard({
 
 type AssignBugToDevProps = {
   bugTitle: string;
-  projectDevelopers: {
-    id: string;
-    name: string | null;
-    image: string | null;
-  }[];
+
   bugId: string;
   children: ReactNode;
 };
-function AssignBugToDev({
+export function AssignBugToDev({
   children,
   bugId,
   bugTitle,
-  projectDevelopers,
 }: AssignBugToDevProps) {
   const utils = api.useContext();
+  const { queryVariables, projectDevelopers } = useContext(ProjectContext);
   const { mutate } = api.bug.assignTo.useMutation({
     async onMutate(assignee) {
       await utils.project.getDetailsById.cancel();
       const prevData = utils.project.getDetailsById.getData();
-      utils.project.getDetailsById.setData(
-        {
-          id: "clfsqlwll0000sjmn1th17zmi",
-          status: ["CLOSED", "INPROGRESS", "TESTING", "TODO", "UNASSIGNED"],
-          priority: ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
-        },
-        (old) => {
-          if (old)
-            return {
-              ...old,
-              bugs: old?.bugs.map((bug) =>
-                bug.id === assignee.bugId
-                  ? {
-                      ...bug,
-                      status: "TODO",
-                      assignedTo:
-                        projectDevelopers?.find(
-                          (dev) => dev.id === assignee.userId
-                        ) ?? null,
-                    }
-                  : bug
-              ),
-            };
-        }
-      );
+      utils.project.getDetailsById.setData(queryVariables, (old) => {
+        if (old)
+          return {
+            ...old,
+            bugs: old?.bugs.map((bug) =>
+              bug.id === assignee.bugId
+                ? {
+                    ...bug,
+                    status: "TODO",
+                    assignedTo:
+                      projectDevelopers?.find(
+                        (dev) => dev.id === assignee.userId
+                      ) ?? null,
+                  }
+                : bug
+            ),
+          };
+      });
       return { prevData };
     },
     onError(err, newStatus, ctx) {
-      utils.project.getDetailsById.setData(
-        { id: "clfsqlwll0000sjmn1th17zmi" },
-        ctx?.prevData
-      );
+      utils.project.getDetailsById.setData(queryVariables, ctx?.prevData);
     },
     onSettled() {
       void utils.project.getDetailsById.invalidate();
