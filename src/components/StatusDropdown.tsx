@@ -5,11 +5,23 @@ import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
 
 const defaultStatuses = [
-  { value: "UNASSIGNED" as Status, background: "bg-slate-900" },
-  { value: "TODO" as Status, background: "bg-violet-800" },
-  { value: "INPROGRESS" as Status, background: "bg-sky-600" },
-  { value: "TESTING" as Status, background: "bg-teal-600" },
-  { value: "CLOSED" as Status, background: "bg-white text-gray-800" },
+  {
+    value: "UNASSIGNED" as Status,
+    label: "Unassigned",
+    background: "bg-slate-900",
+  },
+  { value: "TODO" as Status, label: "Todo", background: "bg-violet-800" },
+  {
+    value: "INPROGRESS" as Status,
+    background: "bg-sky-600",
+    label: "In Progress",
+  },
+  { value: "TESTING" as Status, background: "bg-teal-600", label: "Testing" },
+  {
+    value: "CLOSED" as Status,
+    background: "bg-white text-gray-800",
+    label: "Closed",
+  },
 ];
 
 type StatusDropdownProps = {
@@ -24,11 +36,47 @@ const StatusDropdown = ({
   assigneId,
   projectOwnerId,
 }: StatusDropdownProps) => {
-  const ctx = api.useContext();
+  const utils = api.useContext();
   const { data: sessionData } = useSession();
   const { mutate } = api.bug.changeStatus.useMutation({
-    onError: () => {
-      void ctx.project.getDetailsById.invalidate();
+    async onMutate(newStatus) {
+      await utils.project.getDetailsById.cancel();
+      const prevData = utils.project.getDetailsById.getData();
+      utils.project.getDetailsById.setData(
+        {
+          id: "clfsqlwll0000sjmn1th17zmi",
+          status: ["CLOSED", "INPROGRESS", "TESTING", "TODO", "UNASSIGNED"],
+          priority: ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+        },
+        (old) => {
+          if (old)
+            return {
+              ...old,
+              bugs: old?.bugs.map((bug) =>
+                bug.id === newStatus.bugId
+                  ? {
+                      ...bug,
+                      status: newStatus.status,
+                      assignedTo:
+                        newStatus.status === "UNASSIGNED"
+                          ? null
+                          : bug.assignedTo,
+                    }
+                  : bug
+              ),
+            };
+        }
+      );
+      return { prevData };
+    },
+    onError(err, newStatus, ctx) {
+      utils.project.getDetailsById.setData(
+        { id: "clfsqlwll0000sjmn1th17zmi" },
+        ctx?.prevData
+      );
+    },
+    onSettled() {
+      void utils.project.getDetailsById.invalidate();
     },
   });
   const readonly =
@@ -38,13 +86,14 @@ const StatusDropdown = ({
     ? defaultStatuses
     : defaultStatuses.filter((item) => item.value !== "CLOSED");
   const [open, setOpen] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<Status>(status);
   const selectedStatusObject = Statuses?.find(
-    (item) => item.value === selectedStatus
+    (item) => item.value === status
   ) ?? {
     value: "UNASSIGNED" as const,
     background: "bg-slate-900",
+    label: "Unassigned",
   };
+
   return (
     <DropdownMenu.Root
       open={open}
@@ -60,7 +109,7 @@ const StatusDropdown = ({
           } options w-28 py-1.5 text-center
           text-sm capitalize`}
         >
-          {selectedStatus.toLowerCase()}
+          {selectedStatusObject.label}
         </button>
       </DropdownMenu.Trigger>
 
@@ -72,7 +121,6 @@ const StatusDropdown = ({
                 key={status.value}
                 value={status.value}
                 onSelect={() => {
-                  setSelectedStatus(status.value);
                   mutate({ status: status.value, bugId });
                 }}
                 className={`my-1 cursor-pointer text-center capitalize outline-none transition hover:text-gray-500`}

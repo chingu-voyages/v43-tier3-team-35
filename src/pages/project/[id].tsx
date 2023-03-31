@@ -12,6 +12,13 @@ import {
 import formatDistance from "date-fns/formatDistance";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/Avatar";
 import StatusDropdown from "~/components/StatusDropdown";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/Dialog";
 const Priorities = [
   {
     value: "CRITICAL" as const,
@@ -42,6 +49,7 @@ type selectedPrioritiesType = ("CRITICAL" | "HIGH" | "MEDIUM" | "LOW")[];
 export default function ProjectDetails() {
   const {
     query: { id },
+    isReady,
   } = useRouter();
   const [selectedStatus, setSelectedStatus] = useState<selectedStatusType>([
     "CLOSED",
@@ -58,13 +66,13 @@ export default function ProjectDetails() {
       status: selectedStatus,
       priority: selectedPriorities,
     },
-    { keepPreviousData: true }
+    { keepPreviousData: true, enabled: isReady }
   );
   if (isLoading) return <div className="">loading</div>;
 
   if (isError) return <div className="">error</div>;
   return (
-    <main className="grid min-h-screen grid-cols-5 gap-8 p-11">
+    <main className="grid min-h-screen grid-cols-5 gap-x-8 p-11">
       <div className="col-span-4">
         <div className="flex items-center justify-between rounded-xl bg-slate-800 px-6 py-5">
           <div className="">
@@ -75,9 +83,10 @@ export default function ProjectDetails() {
           </button>
         </div>
         {data.bugs.length > 0 ? (
-          <div className="mt-4 grid grid-cols-3 gap-x-5">
+          <div className="mt-4 grid grid-cols-3 gap-x-5 gap-y-5">
             {data.bugs.map((bug) => (
               <BugCard
+                projectDevelopers={data.developers}
                 id={bug.id}
                 projectOwnerId={data.owner.id}
                 title={bug.title}
@@ -113,7 +122,7 @@ export default function ProjectDetails() {
         )}
       </div>
       <div className="">
-        <SidebarCard title="Bug Status" className="mb-6 flex flex-wrap gap-2">
+        <SidebarCard title="Bug Status" className="flex flex-wrap gap-2">
           {Object.values(Status).map((item) => (
             <li key={item}>
               <StatusButton
@@ -126,7 +135,7 @@ export default function ProjectDetails() {
             </li>
           ))}
         </SidebarCard>
-        <SidebarCard title="Bug Priority" className="mb-6 space-y-1">
+        <SidebarCard title="Bug Priority" className="space-y-1">
           {Priorities.map(({ value, background }) => (
             <PriorityButton
               count={data.bugs.filter((bug) => bug.priority === value).length}
@@ -203,6 +212,11 @@ type BugCardProps = {
   title: string;
   author: string;
   assignee?: { id: string; name: string | null; image: string | null } | null;
+  projectDevelopers: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  }[];
   description: string;
   createdAt: Date;
   priority: { value: Priority; stroke: string };
@@ -211,6 +225,7 @@ type BugCardProps = {
   projectOwnerId: string;
 };
 function BugCard({
+  projectDevelopers,
   id,
   projectOwnerId,
   title,
@@ -251,10 +266,110 @@ function BugCard({
             <AvatarFallback>{assignee.name}</AvatarFallback>
           </Avatar>
         ) : (
-          <UserPlusIcon className="h-6 w-6" />
+          <AssignBugToDev
+            projectDevelopers={projectDevelopers}
+            bugTitle={title}
+            bugId={id}
+          >
+            <UserPlusIcon className="h-6 w-6" />
+          </AssignBugToDev>
         )}
       </div>
     </div>
+  );
+}
+
+type AssignBugToDevProps = {
+  bugTitle: string;
+  projectDevelopers: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  }[];
+  bugId: string;
+  children: ReactNode;
+};
+function AssignBugToDev({
+  children,
+  bugId,
+  bugTitle,
+  projectDevelopers,
+}: AssignBugToDevProps) {
+  const utils = api.useContext();
+  const { mutate } = api.bug.assignTo.useMutation({
+    async onMutate(assignee) {
+      await utils.project.getDetailsById.cancel();
+      const prevData = utils.project.getDetailsById.getData();
+      utils.project.getDetailsById.setData(
+        {
+          id: "clfsqlwll0000sjmn1th17zmi",
+          status: ["CLOSED", "INPROGRESS", "TESTING", "TODO", "UNASSIGNED"],
+          priority: ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+        },
+        (old) => {
+          if (old)
+            return {
+              ...old,
+              bugs: old?.bugs.map((bug) =>
+                bug.id === assignee.bugId
+                  ? {
+                      ...bug,
+                      status: "TODO",
+                      assignedTo:
+                        projectDevelopers?.find(
+                          (dev) => dev.id === assignee.userId
+                        ) ?? null,
+                    }
+                  : bug
+              ),
+            };
+        }
+      );
+      return { prevData };
+    },
+    onError(err, newStatus, ctx) {
+      utils.project.getDetailsById.setData(
+        { id: "clfsqlwll0000sjmn1th17zmi" },
+        ctx?.prevData
+      );
+    },
+    onSettled() {
+      void utils.project.getDetailsById.invalidate();
+    },
+  });
+  return (
+    <Dialog>
+      <DialogTrigger>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Assign {bugTitle} to</DialogTitle>
+          {/* <DialogDescription> */}
+          <ul className="mt-6 space-y-3">
+            {projectDevelopers.map((developer) => (
+              <li
+                key={developer.id}
+                className="flex justify-between text-hxs text-white"
+              >
+                <div className="flex">
+                  <Avatar className="mr-4 h-6 w-6">
+                    <AvatarImage src={developer?.image ?? ""} />
+                    <AvatarFallback>{developer.name}</AvatarFallback>
+                  </Avatar>
+                  {developer.name}
+                </div>
+                <button
+                  onClick={() => mutate({ bugId, userId: developer.id })}
+                  aria-label={`Assign to ${developer?.name ?? ""} `}
+                >
+                  <PlusIcon aria-hidden className="h-6 w-6 cursor-pointer" />
+                </button>
+              </li>
+            ))}
+          </ul>
+          {/* </DialogDescription> */}
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -426,16 +541,16 @@ function PriorityButton({
 function SidebarCard({
   title,
   children,
-  className,
+  className = "",
 }: {
   title: string;
   className?: string;
   children: ReactNode;
 }) {
   return (
-    <ul className={"rounded-xl bg-slate-800 px-6 py-4 " + (className || "")}>
-      <h2 className="mb-6 text-hs">{title}</h2>
-      {children}
-    </ul>
+    <div className="mb-6 rounded-xl bg-slate-800 px-6 py-4">
+      <h2 className="mb-4 text-hs">{title}</h2>
+      <ul className={className}>{children}</ul>
+    </div>
   );
 }
