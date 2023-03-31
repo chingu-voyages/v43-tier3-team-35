@@ -15,7 +15,7 @@ export const projectRouter = createTRPCRouter({
   getDetailsById: protectedProcedure
     .input(
       z.object({
-        id: z.string(),
+        id: z.string().cuid(),
         priority: z.array(z.enum(PRIORITY)).optional(),
         status: z.array(z.enum(STATUS)).optional(),
       })
@@ -67,4 +67,10 @@ export const projectRouter = createTRPCRouter({
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
     ),
+    getUnassignedBugsTitles: protectedProcedure.input(z.object({id: z.string().cuid()})).query(({
+      ctx,
+      input,
+    }) => {
+      return ctx.prisma.bug.findMany({where: {status: "UNASSIGNED", project: {id: {equals: input.id}}}, select: {id: true, title: true}})
+    })
 });
