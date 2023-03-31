@@ -71,6 +71,7 @@ export default function ProjectDetails() {
     query: { id },
     isReady,
   } = useRouter();
+  const { data: sessionData } = useSession();
   const [selectedStatus, setSelectedStatus] = useState<selectedStatusType>([
     "CLOSED",
     "INPROGRESS",
@@ -186,9 +187,11 @@ export default function ProjectDetails() {
                   </Avatar>
                   {developer.name}
                 </div>
-                <AssignBugsToDev developer={developer}>
-                  <PlusIcon className="h-6 w-6 cursor-pointer" />
-                </AssignBugsToDev>
+                {sessionData?.user.id === data.owner.id && (
+                  <AssignBugsToDev developer={developer}>
+                    <PlusIcon className="h-6 w-6 cursor-pointer hover:opacity-50" />
+                  </AssignBugsToDev>
+                )}
               </li>
             ))}
           </SidebarCard>
@@ -318,7 +321,8 @@ export function AssignBugToDev({
   const { mutate } = api.bug.assignTo.useMutation({
     async onMutate(assignee) {
       await utils.project.getDetailsById.cancel();
-      const prevData = utils.project.getDetailsById.getData();
+      const pdPrevData = utils.project.getDetailsById.getData();
+      const ubPrevData = utils.project.getUnassignedBugsTitles.getData();
       utils.project.getDetailsById.setData(queryVariables, (old) => {
         if (old)
           return {
@@ -337,13 +341,24 @@ export function AssignBugToDev({
             ),
           };
       });
-      return { prevData };
+      utils.project.getUnassignedBugsTitles.setData(
+        { id: queryVariables.id },
+        (old) => {
+          return old && old.filter((bug) => bug.id !== assignee.bugId);
+        }
+      );
+      return { pdPrevData, ubPrevData };
     },
     onError(err, newStatus, ctx) {
-      utils.project.getDetailsById.setData(queryVariables, ctx?.prevData);
+      utils.project.getDetailsById.setData(queryVariables, ctx?.pdPrevData);
+      utils.project.getUnassignedBugsTitles.setData(
+        queryVariables,
+        ctx?.ubPrevData
+      );
     },
     onSettled() {
       void utils.project.getDetailsById.invalidate();
+      void utils.project.getUnassignedBugsTitles.invalidate();
     },
   });
   return (
@@ -357,7 +372,7 @@ export function AssignBugToDev({
             {projectDevelopers.map((developer) => (
               <li
                 key={developer.id}
-                className="flex justify-between text-hxs text-white"
+                className="flex justify-between text-bodys text-white"
               >
                 <div className="flex">
                   <Avatar className="mr-4 h-6 w-6">
@@ -404,7 +419,8 @@ export function AssignBugsToDev({
   const { mutate } = api.bug.assignTo.useMutation({
     async onMutate(assignee) {
       await utils.project.getDetailsById.cancel();
-      const prevData = utils.project.getDetailsById.getData();
+      const pdPrevData = utils.project.getDetailsById.getData();
+      const ubPrevData = utils.project.getUnassignedBugsTitles.getData();
       utils.project.getDetailsById.setData(queryVariables, (old) => {
         if (old)
           return {
@@ -428,13 +444,18 @@ export function AssignBugsToDev({
           if (old) return old.filter((bug) => bug.id !== assignee.bugId);
         }
       );
-      return { prevData };
+      return { pdPrevData, ubPrevData };
     },
     onError(err, newStatus, ctx) {
-      utils.project.getDetailsById.setData(queryVariables, ctx?.prevData);
+      utils.project.getDetailsById.setData(queryVariables, ctx?.pdPrevData);
+      utils.project.getUnassignedBugsTitles.setData(
+        { id: queryVariables.id },
+        ctx?.ubPrevData
+      );
     },
     onSettled() {
       void utils.project.getDetailsById.invalidate();
+      void utils.project.getUnassignedBugsTitles.invalidate();
     },
   });
   return (
@@ -449,7 +470,7 @@ export function AssignBugsToDev({
             data.map((bug) => (
               <li
                 key={bug.id}
-                className="flex justify-between text-hxs text-white"
+                className="flex justify-between text-bodys text-white"
               >
                 <div className="flex">{bug.title}</div>
                 <button

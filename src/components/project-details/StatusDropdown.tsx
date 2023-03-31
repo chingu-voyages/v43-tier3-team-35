@@ -43,7 +43,8 @@ const StatusDropdown = ({
   const { mutate } = api.bug.changeStatus.useMutation({
     async onMutate(newStatus) {
       await utils.project.getDetailsById.cancel();
-      const prevData = utils.project.getDetailsById.getData();
+      const pdPrevData = utils.project.getDetailsById.getData();
+      const ubPrevData = utils.project.getUnassignedBugsTitles.getData();
       utils.project.getDetailsById.setData(queryVariables, (old) => {
         if (old)
           return {
@@ -60,13 +61,34 @@ const StatusDropdown = ({
             ),
           };
       });
-      return { prevData };
+      if (newStatus.status === "UNASSIGNED")
+        utils.project.getUnassignedBugsTitles.setData(
+          { id: queryVariables.id },
+          (old) => {
+            return (
+              old && old.concat([{ id: newStatus.bugId, title: bugTitle }])
+            );
+          }
+        );
+      else if (status === "UNASSIGNED")
+        utils.project.getUnassignedBugsTitles.setData(
+          { id: queryVariables.id },
+          (old) => {
+            return old && old.filter((bug) => bug.id !== newStatus.bugId);
+          }
+        );
+      return { pdPrevData, ubPrevData };
     },
     onError(err, newStatus, ctx) {
-      utils.project.getDetailsById.setData(queryVariables, ctx?.prevData);
+      utils.project.getDetailsById.setData(queryVariables, ctx?.pdPrevData);
+      utils.project.getUnassignedBugsTitles.setData(
+        { id: queryVariables.id },
+        ctx?.ubPrevData
+      );
     },
     onSettled() {
       void utils.project.getDetailsById.invalidate();
+      void utils.project.getUnassignedBugsTitles.invalidate();
     },
   });
   const readonly =
