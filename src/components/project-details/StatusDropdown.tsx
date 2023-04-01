@@ -130,17 +130,12 @@ const StatusDropdown = ({
     );
   return (
     <AssignBugToDev bugTitle={bugTitle} bugId={bugId}>
-      <button
-        disabled={readonly}
-        className={`rounded-[4px] ${
-          readonly ? "cursor-default" : "cursor-pointer"
-        } transition hover:bg-opacity-75 ${
-          selectedStatusObject.background
-        } options w-28 py-1.5 text-center
+      <span
+        className={`inline-block cursor-pointer rounded-[4px] transition hover:bg-opacity-75 ${selectedStatusObject.background} options text-centerz w-28 py-1.5
     text-sm capitalize`}
       >
         {selectedStatusObject.label}
-      </button>
+      </span>
     </AssignBugToDev>
   );
 };

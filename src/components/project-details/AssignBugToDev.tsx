@@ -11,6 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/Avatar";
 import PlusIcon from "@heroicons/react/24/outline/PlusIcon";
 import { ProjectContext } from "~/context/ProjectDetailsContext";
+import { getNameLetters } from "~/lib/utils";
 
 type AssignBugToDevProps = {
   bugTitle: string;
@@ -84,7 +85,9 @@ export default function AssignBugToDev({
                 <div className="flex">
                   <Avatar className="mr-4 h-6 w-6">
                     <AvatarImage src={developer?.image ?? ""} />
-                    <AvatarFallback>{developer.name}</AvatarFallback>
+                    <AvatarFallback>
+                      {getNameLetters(developer?.name ?? "")}
+                    </AvatarFallback>
                   </Avatar>
                   {developer.name}
                 </div>
