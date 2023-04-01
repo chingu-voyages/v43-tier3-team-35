@@ -16,6 +16,7 @@ import EmptyState from "~/components/project-details/EmptyState";
 import { Priorities } from "~/utils/data";
 import { ProjectContext } from "~/context/ProjectDetailsContext";
 import type { bugSortingType } from "~/utils/sorting";
+import SortDropdown from "~/components/project-details/SortDropdown";
 
 export default function ProjectDetails() {
   const {
@@ -57,8 +58,9 @@ export default function ProjectDetails() {
       <main className="grid min-h-screen grid-cols-5 gap-x-8 p-11">
         <div className="col-span-4">
           <div className="flex items-center justify-between rounded-xl bg-slate-800 px-6 py-5">
-            <div className="">
+            <div className="flex items-center justify-between gap-6">
               <h1 className="text-hm font-medium">{data.name}</h1>
+              <SortDropdown sort={sortBy} setSort={setSortBy} />
             </div>
             <button className="rounded-md bg-blue-900 px-5 py-3 text-bodym font-medium text-white transition duration-300 hover:bg-white hover:text-blue-900">
               Report New Bug
