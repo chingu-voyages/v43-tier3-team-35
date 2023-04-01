@@ -3,7 +3,7 @@ import {
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
 import type { Priority, Status } from "@prisma/client";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/Avatar";
 import formatDistance from "date-fns/formatDistance";
 import { useSession } from "next-auth/react";
 import { useContext } from "react";
