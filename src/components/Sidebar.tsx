@@ -4,6 +4,17 @@ import { Squares2X2Icon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/Avatar";
 import { api } from "~/utils/api";
 import Link from "next/link";
+import { Command as CommandPrimitive } from "cmdk";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from "~/components/ui/command";
 
 export default function Sidebar({
   loggedUser,
@@ -28,7 +39,11 @@ export default function Sidebar({
         <Image priority src="../logo.svg" alt="logo" width={250} height={100} />
       </div>
       <div>
-        <input type="text" placeholder="Quick Search..." />{" "}
+        <CommandPrimitive>
+          <CommandInput placeholder="Type a command or search..." />
+          <CommandList></CommandList>
+        </CommandPrimitive>
+
         <MagnifyingGlassIcon className="h-6 w-6" />
       </div>
 
