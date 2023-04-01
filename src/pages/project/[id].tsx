@@ -103,7 +103,7 @@ export default function ProjectDetails() {
       }}
     >
       <div className="flex">
-        <Sidebar loggedUser={data.owner} />
+        <Sidebar loggedUser={!isLoading && !isError && sessionData?.user} />
         <main className="grid min-h-screen grid-cols-5 gap-x-8 p-11">
           <div className="col-span-4">
             <div className="flex items-center justify-between rounded-xl bg-slate-800 px-6 py-5">
