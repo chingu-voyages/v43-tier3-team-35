@@ -80,7 +80,7 @@ const StatusDropdown = ({
     ? defaultStatuses
     : defaultStatuses.filter((item) => item.value !== "CLOSED");
   const [open, setOpen] = useState(false);
-  const selectedStatusObject = Statuses?.find(
+  const selectedStatusObject = defaultStatuses?.find(
     (item) => item.value === status
   ) ?? {
     value: "UNASSIGNED" as const,
@@ -120,7 +120,7 @@ const StatusDropdown = ({
                   }}
                   className={`my-1 cursor-pointer text-center capitalize outline-none transition hover:text-gray-500`}
                 >
-                  {status.value.toLowerCase()}
+                  {status.label}
                 </DropdownMenu.RadioItem>
               ))}
             </DropdownMenu.RadioGroup>
