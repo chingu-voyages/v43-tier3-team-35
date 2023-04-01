@@ -18,6 +18,8 @@ import { ProjectContext } from "~/context/ProjectDetailsContext";
 import type { bugSortingType } from "~/utils/sorting";
 import SortDropdown from "~/components/project-details/SortDropdown";
 import { getNameLetters } from "~/lib/utils";
+import { UserPlusIcon } from "@heroicons/react/24/solid";
+import ProjectDevsSettings from "~/components/ProjectDevsSettings";
 
 export default function ProjectDetails() {
   const {
@@ -41,10 +43,11 @@ export default function ProjectDetails() {
     priority: selectedPriorities,
     sort: sortBy,
   };
-  const { data, isLoading, isError } = api.project.getDetailsById.useQuery(
+  const { data, isLoading, isError } = api.project.getDetails.useQuery(
     queryVariables,
     { keepPreviousData: true, enabled: isReady }
   );
+  const { mutate } = api.project.addDev.useMutation();
   if (isLoading) return <div className="">loading</div>;
 
   if (isError) return <div className="">error</div>;
@@ -119,7 +122,15 @@ export default function ProjectDetails() {
               />
             ))}
           </SidebarCard>
-          <SidebarCard title="Developers" className="space-y-3">
+          <SidebarCard
+            title="Developers"
+            className="space-y-3"
+            topRight={
+              <ProjectDevsSettings projectId={id as string}>
+                <UserPlusIcon className="h-6 w-6 transition duration-300 hover:fill-blue-500" />
+              </ProjectDevsSettings>
+            }
+          >
             {data.developers.map((developer) => (
               <li
                 key={developer.id}
@@ -136,7 +147,7 @@ export default function ProjectDetails() {
                 </div>
                 {sessionData?.user.id === data.owner.id && (
                   <AssignBugsToDev developer={developer}>
-                    <PlusIcon className="h-6 w-6 cursor-pointer hover:opacity-50" />
+                    <PlusIcon className="h-6 w-6 cursor-pointer hover:stroke-blue-500" />
                   </AssignBugsToDev>
                 )}
               </li>
