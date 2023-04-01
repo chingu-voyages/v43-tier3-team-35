@@ -47,7 +47,7 @@ export default function ProjectDetails() {
     queryVariables,
     { keepPreviousData: true, enabled: isReady }
   );
-  const { mutate } = api.project.addDev.useMutation();
+  const isOwner = sessionData?.user.id === data?.owner.id;
   if (isLoading) return <div className="">loading</div>;
 
   if (isError) return <div className="">error</div>;
@@ -126,9 +126,13 @@ export default function ProjectDetails() {
             title="Developers"
             className="space-y-3"
             topRight={
-              <ProjectDevsSettings projectId={id as string}>
-                <UserPlusIcon className="h-6 w-6 transition duration-300 hover:fill-blue-500" />
-              </ProjectDevsSettings>
+              <>
+                {isOwner && (
+                  <ProjectDevsSettings projectId={id as string}>
+                    <UserPlusIcon className="h-6 w-6 transition duration-300 hover:fill-blue-500" />
+                  </ProjectDevsSettings>
+                )}
+              </>
             }
           >
             {data.developers.map((developer) => (
@@ -145,7 +149,7 @@ export default function ProjectDetails() {
                   </Avatar>
                   {developer.name}
                 </div>
-                {sessionData?.user.id === data.owner.id && (
+                {isOwner && (
                   <AssignBugsToDev developer={developer}>
                     <PlusIcon className="h-6 w-6 cursor-pointer hover:stroke-blue-500" />
                   </AssignBugsToDev>

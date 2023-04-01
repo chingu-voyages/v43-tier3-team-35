@@ -24,10 +24,10 @@ const StatusDropdown = ({
   const { data: sessionData } = useSession();
   const { mutate } = api.bug.changeStatus.useMutation({
     async onMutate(newStatus) {
-      await utils.project.getDetailsById.cancel();
-      const pdPrevData = utils.project.getDetailsById.getData();
-      const ubPrevData = utils.project.getUnassignedBugsTitles.getData();
-      utils.project.getDetailsById.setData(queryVariables, (old) => {
+      await utils.project.getDetails.cancel();
+      const pdPrevData = utils.project.getDetails.getData();
+      const ubPrevData = utils.bug.getUnassignedTitles.getData();
+      utils.project.getDetails.setData(queryVariables, (old) => {
         if (old)
           return {
             ...old,
@@ -44,7 +44,7 @@ const StatusDropdown = ({
           };
       });
       if (newStatus.status === "UNASSIGNED")
-        utils.project.getUnassignedBugsTitles.setData(
+        utils.bug.getUnassignedTitles.setData(
           { id: queryVariables.id },
           (old) => {
             return (
@@ -53,7 +53,7 @@ const StatusDropdown = ({
           }
         );
       else if (status === "UNASSIGNED")
-        utils.project.getUnassignedBugsTitles.setData(
+        utils.bug.getUnassignedTitles.setData(
           { id: queryVariables.id },
           (old) => {
             return old && old.filter((bug) => bug.id !== newStatus.bugId);
@@ -62,15 +62,15 @@ const StatusDropdown = ({
       return { pdPrevData, ubPrevData };
     },
     onError(err, newStatus, ctx) {
-      utils.project.getDetailsById.setData(queryVariables, ctx?.pdPrevData);
-      utils.project.getUnassignedBugsTitles.setData(
+      utils.project.getDetails.setData(queryVariables, ctx?.pdPrevData);
+      utils.bug.getUnassignedTitles.setData(
         { id: queryVariables.id },
         ctx?.ubPrevData
       );
     },
     onSettled() {
-      void utils.project.getDetailsById.invalidate();
-      void utils.project.getUnassignedBugsTitles.invalidate();
+      void utils.project.getDetails.invalidate();
+      void utils.bug.getUnassignedTitles.invalidate();
     },
   });
   const readonly =

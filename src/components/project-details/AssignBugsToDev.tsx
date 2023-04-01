@@ -24,15 +24,15 @@ export default function AssignBugsToDev({
 }) {
   const utils = api.useContext();
   const { queryVariables } = useContext(ProjectContext);
-  const { data } = api.project.getUnassignedBugsTitles.useQuery({
+  const { data } = api.bug.getUnassignedTitles.useQuery({
     id: queryVariables.id,
   });
   const { mutate } = api.bug.assignTo.useMutation({
     async onMutate(assignee) {
-      await utils.project.getDetailsById.cancel();
-      const pdPrevData = utils.project.getDetailsById.getData();
-      const ubPrevData = utils.project.getUnassignedBugsTitles.getData();
-      utils.project.getDetailsById.setData(queryVariables, (old) => {
+      await utils.project.getDetails.cancel();
+      const pdPrevData = utils.project.getDetails.getData();
+      const ubPrevData = utils.bug.getUnassignedTitles.getData();
+      utils.project.getDetails.setData(queryVariables, (old) => {
         if (old)
           return {
             ...old,
@@ -47,7 +47,7 @@ export default function AssignBugsToDev({
             ),
           };
       });
-      utils.project.getUnassignedBugsTitles.setData(
+      utils.bug.getUnassignedTitles.setData(
         {
           id: queryVariables.id,
         },
@@ -58,15 +58,15 @@ export default function AssignBugsToDev({
       return { pdPrevData, ubPrevData };
     },
     onError(err, newStatus, ctx) {
-      utils.project.getDetailsById.setData(queryVariables, ctx?.pdPrevData);
-      utils.project.getUnassignedBugsTitles.setData(
+      utils.project.getDetails.setData(queryVariables, ctx?.pdPrevData);
+      utils.bug.getUnassignedTitles.setData(
         { id: queryVariables.id },
         ctx?.ubPrevData
       );
     },
     onSettled() {
-      void utils.project.getDetailsById.invalidate();
-      void utils.project.getUnassignedBugsTitles.invalidate();
+      void utils.project.getDetails.invalidate();
+      void utils.bug.getUnassignedTitles.invalidate();
     },
   });
   return (
