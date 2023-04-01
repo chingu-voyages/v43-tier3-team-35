@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Squares2X2Icon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/Avatar";
 import { api } from "~/utils/api";
+import Link from "next/link";
 
 export default function Sidebar({
   loggedUser,
@@ -42,7 +43,18 @@ export default function Sidebar({
         {!isLoading &&
           !isError &&
           data.assignedBugs.length > 0 &&
-          data.assignedBugs.map((bug) => <div key={bug.id}>{bug.title}</div>)}
+          data.assignedBugs.map((bug) => (
+            <Link key={bug.id} href={`/bug/${bug.id}`} className="flex">
+              <Image
+                priority
+                src="../bug.svg"
+                alt="bug"
+                width={20}
+                height={20}
+              />{" "}
+              {bug.title}
+            </Link>
+          ))}
       </div>
       <div className="uppercase text-gray-400">
         My projects ({data.ownedProjects.length})
@@ -52,14 +64,29 @@ export default function Sidebar({
           !isError &&
           data.ownedProjects.length > 0 &&
           data.ownedProjects.map((project) => (
-            <div key={project.id}>{project.name}</div>
+            <Link
+              key={project.id}
+              href={`/project/${project.id}`}
+              className="flex"
+            >
+              <Image
+                priority
+                src="../project.svg"
+                alt="project"
+                width={20}
+                height={20}
+              />
+              {project.name}
+            </Link>
           ))}
       </div>
       <div className="">
-        <Avatar title="avatar">
-          <AvatarImage src={loggedUser?.image ?? ""} />
-          <AvatarFallback>{loggedUser?.name}</AvatarFallback>
-        </Avatar>
+        <Link href={"/dashboard"}>
+          <Avatar title="avatar">
+            <AvatarImage src={loggedUser?.image ?? ""} />
+            <AvatarFallback>{loggedUser?.name}</AvatarFallback>
+          </Avatar>
+        </Link>
       </div>
     </div>
   );
