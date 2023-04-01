@@ -10,6 +10,7 @@ import { useContext } from "react";
 import { ProjectContext } from "~/context/ProjectDetailsContext";
 import AssignBugToDev from "./project-details/AssignBugToDev";
 import StatusDropdown from "./project-details/StatusDropdown";
+import { getNameLetters } from "~/lib/utils";
 
 type BugCardProps = {
   id: string;
@@ -62,7 +63,10 @@ export default function BugCard({
         {assignee ? (
           <Avatar title={assignee?.name ?? "anonymous"}>
             <AvatarImage src={assignee?.image ?? ""} />
-            <AvatarFallback>{assignee.name}</AvatarFallback>
+            <AvatarFallback>
+              {" "}
+              {getNameLetters(assignee?.name ?? "")}
+            </AvatarFallback>
           </Avatar>
         ) : userData?.user.id === projectOwnerId ? (
           <AssignBugToDev bugTitle={title} bugId={id}>

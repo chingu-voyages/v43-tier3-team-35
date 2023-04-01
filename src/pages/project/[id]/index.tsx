@@ -17,6 +17,7 @@ import { Priorities } from "~/utils/data";
 import { ProjectContext } from "~/context/ProjectDetailsContext";
 import type { bugSortingType } from "~/utils/sorting";
 import SortDropdown from "~/components/project-details/SortDropdown";
+import { getNameLetters } from "~/lib/utils";
 
 export default function ProjectDetails() {
   const {
@@ -127,7 +128,9 @@ export default function ProjectDetails() {
                 <div className="flex">
                   <Avatar className="mr-4 h-6 w-6">
                     <AvatarImage src={developer?.image ?? ""} />
-                    <AvatarFallback>{developer.name}</AvatarFallback>
+                    <AvatarFallback>
+                      {getNameLetters(developer?.name ?? "")}
+                    </AvatarFallback>
                   </Avatar>
                   {developer.name}
                 </div>
