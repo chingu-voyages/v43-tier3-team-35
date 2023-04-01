@@ -15,6 +15,7 @@ import AssignBugsToDev from "~/components/project-details/AssignBugsToDev";
 import EmptyState from "~/components/project-details/EmptyState";
 import { Priorities } from "~/utils/data";
 import { ProjectContext } from "~/context/ProjectDetailsContext";
+import type { bugSortingType } from "~/utils/sorting";
 
 export default function ProjectDetails() {
   const {
@@ -31,10 +32,12 @@ export default function ProjectDetails() {
   ]);
   const [selectedPriorities, setSelectedPriorities] =
     useState<selectedPrioritiesType>(["CRITICAL", "HIGH", "MEDIUM", "LOW"]);
+  const [sortBy, setSortBy] = useState<bugSortingType>("recent");
   const queryVariables = {
     id: id as string,
     status: selectedStatus,
     priority: selectedPriorities,
+    sort: sortBy,
   };
   const { data, isLoading, isError } = api.project.getDetailsById.useQuery(
     queryVariables,
