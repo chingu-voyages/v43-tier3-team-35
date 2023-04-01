@@ -24,6 +24,9 @@ const config = {
         bodym: ["0.9375rem", { fontWeight: 400, lineHeight: "1.171875rem" }],
         bodys: ["0.94rem", { fontWeight: 300, lineHeight: "1.015625rem" }],
       },
+      colors: {
+        "sidebar-border": "rgba(246, 240, 240, 0.16)",
+      },
     },
   },
   plugins: [require("@tailwindcss/line-clamp")],

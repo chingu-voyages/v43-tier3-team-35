@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "~/components/Dialog";
 import { useSession } from "next-auth/react";
+import Sidebar from "~/components/Sidebar";
 
 const Priorities = [
   {
@@ -101,102 +102,109 @@ export default function ProjectDetails() {
         projectOwnerId: data.owner.id,
       }}
     >
-      <main className="grid min-h-screen grid-cols-5 gap-x-8 p-11">
-        <div className="col-span-4">
-          <div className="flex items-center justify-between rounded-xl bg-slate-800 px-6 py-5">
-            <div className="">
-              <h1 className="text-hm font-medium">{data.name}</h1>
+      <div className="flex">
+        <Sidebar loggedUser={data.owner} />
+        <main className="grid min-h-screen grid-cols-5 gap-x-8 p-11">
+          <div className="col-span-4">
+            <div className="flex items-center justify-between rounded-xl bg-slate-800 px-6 py-5">
+              <div className="">
+                <h1 className="text-hm font-medium">{data.name}</h1>
+              </div>
+              <button className="rounded-md bg-blue-900 px-5 py-3 text-bodym font-medium text-white transition duration-300 hover:bg-white hover:text-blue-900">
+                Report New Bug
+              </button>
             </div>
-            <button className="rounded-md bg-blue-900 px-5 py-3 text-bodym font-medium text-white transition duration-300 hover:bg-white hover:text-blue-900">
-              Report New Bug
-            </button>
-          </div>
-          {data.bugs.length > 0 ? (
-            <div className="mt-4 grid grid-cols-3 gap-x-5 gap-y-5">
-              {data.bugs.map((bug) => (
-                <BugCard
-                  id={bug.id}
-                  title={bug.title}
-                  description={bug.markdown}
-                  author={bug.reportingUser?.name ?? "anonymous"}
-                  assignee={bug.assignedTo}
-                  n_comments={bug._count.comments}
-                  createdAt={bug.createdAt}
-                  priority={
-                    Priorities?.find((item) => item.value === bug.priority) ?? {
-                      value: "LOW",
-                      stroke: "stroke-white",
+            {data.bugs.length > 0 ? (
+              <div className="mt-4 grid grid-cols-3 gap-x-5 gap-y-5">
+                {data.bugs.map((bug) => (
+                  <BugCard
+                    id={bug.id}
+                    title={bug.title}
+                    description={bug.markdown}
+                    author={bug.reportingUser?.name ?? "anonymous"}
+                    assignee={bug.assignedTo}
+                    n_comments={bug._count.comments}
+                    createdAt={bug.createdAt}
+                    priority={
+                      Priorities?.find(
+                        (item) => item.value === bug.priority
+                      ) ?? {
+                        value: "LOW",
+                        stroke: "stroke-white",
+                      }
                     }
+                    status={bug.status}
+                    key={bug.id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="mt-6 flex h-[80%] flex-col items-center justify-center rounded-2xl bg-slate-800 text-center">
+                <NoResultsSVG />
+
+                <h2 className="mt-6 mb-3 text-hm font-semibold">
+                  No Bugs Here: Keep up the Great Work!
+                </h2>
+                <p className="max-w-md text-sm text-white text-opacity-70">
+                  No bugs match the selected filters for this project at the
+                  moment. Keep up the good work, and don&apos;t hesitate to
+                  adjust the filters or report any new bugs that may arise.
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="">
+            <SidebarCard title="Bug Status" className="flex flex-wrap gap-2">
+              {Object.values(Status).map((item) => (
+                <li key={item}>
+                  <StatusButton
+                    statusValue={item}
+                    setSelectedStatus={setSelectedStatus}
+                    isSelected={selectedStatus.includes(item)}
+                  >
+                    {item.toLowerCase()}
+                  </StatusButton>
+                </li>
+              ))}
+            </SidebarCard>
+            <SidebarCard title="Bug Priority" className="space-y-1">
+              {Priorities.map(({ value, background }) => (
+                <PriorityButton
+                  count={
+                    data.bugs.filter((bug) => bug.priority === value).length
                   }
-                  status={bug.status}
-                  key={bug.id}
+                  isSelected={selectedPriorities.includes(value)}
+                  setSelectedPriorities={setSelectedPriorities}
+                  value={value}
+                  color={background}
+                  key={value}
                 />
               ))}
-            </div>
-          ) : (
-            <div className="mt-6 flex h-[80%] flex-col items-center justify-center rounded-2xl bg-slate-800 text-center">
-              <NoResultsSVG />
-
-              <h2 className="mt-6 mb-3 text-hm font-semibold">
-                No Bugs Here: Keep up the Great Work!
-              </h2>
-              <p className="max-w-md text-sm text-white text-opacity-70">
-                No bugs match the selected filters for this project at the
-                moment. Keep up the good work, and don&apos;t hesitate to adjust
-                the filters or report any new bugs that may arise.
-              </p>
-            </div>
-          )}
-        </div>
-        <div className="">
-          <SidebarCard title="Bug Status" className="flex flex-wrap gap-2">
-            {Object.values(Status).map((item) => (
-              <li key={item}>
-                <StatusButton
-                  statusValue={item}
-                  setSelectedStatus={setSelectedStatus}
-                  isSelected={selectedStatus.includes(item)}
+            </SidebarCard>
+            <SidebarCard title="Developers" className="space-y-3">
+              {data.developers.map((developer) => (
+                <li
+                  key={developer.id}
+                  className="flex justify-between text-bodym"
                 >
-                  {item.toLowerCase()}
-                </StatusButton>
-              </li>
-            ))}
-          </SidebarCard>
-          <SidebarCard title="Bug Priority" className="space-y-1">
-            {Priorities.map(({ value, background }) => (
-              <PriorityButton
-                count={data.bugs.filter((bug) => bug.priority === value).length}
-                isSelected={selectedPriorities.includes(value)}
-                setSelectedPriorities={setSelectedPriorities}
-                value={value}
-                color={background}
-                key={value}
-              />
-            ))}
-          </SidebarCard>
-          <SidebarCard title="Developers" className="space-y-3">
-            {data.developers.map((developer) => (
-              <li
-                key={developer.id}
-                className="flex justify-between text-bodym"
-              >
-                <div className="flex">
-                  <Avatar className="mr-4 h-6 w-6">
-                    <AvatarImage src={developer?.image ?? ""} />
-                    <AvatarFallback>{developer.name}</AvatarFallback>
-                  </Avatar>
-                  {developer.name}
-                </div>
-                {sessionData?.user.id === data.owner.id && (
-                  <AssignBugsToDev developer={developer}>
-                    <PlusIcon className="h-6 w-6 cursor-pointer hover:opacity-50" />
-                  </AssignBugsToDev>
-                )}
-              </li>
-            ))}
-          </SidebarCard>
-        </div>
-      </main>
+                  <div className="flex">
+                    <Avatar className="mr-4 h-6 w-6">
+                      <AvatarImage src={developer?.image ?? ""} />
+                      <AvatarFallback>{developer.name}</AvatarFallback>
+                    </Avatar>
+                    {developer.name}
+                  </div>
+                  {sessionData?.user.id === data.owner.id && (
+                    <AssignBugsToDev developer={developer}>
+                      <PlusIcon className="h-6 w-6 cursor-pointer hover:opacity-50" />
+                    </AssignBugsToDev>
+                  )}
+                </li>
+              ))}
+            </SidebarCard>
+          </div>
+        </main>
+      </div>
     </ProjectContext.Provider>
   );
 }
