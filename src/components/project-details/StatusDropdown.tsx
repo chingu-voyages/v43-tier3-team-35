@@ -3,27 +3,9 @@ import type { Status } from "@prisma/client";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
-import { AssignBugToDev, ProjectContext } from "~/pages/project/[id]";
-
-const defaultStatuses = [
-  {
-    value: "UNASSIGNED" as Status,
-    label: "Unassigned",
-    background: "bg-slate-900",
-  },
-  { value: "TODO" as Status, label: "Todo", background: "bg-violet-800" },
-  {
-    value: "INPROGRESS" as Status,
-    background: "bg-sky-600",
-    label: "In Progress",
-  },
-  { value: "TESTING" as Status, background: "bg-teal-600", label: "Testing" },
-  {
-    value: "CLOSED" as Status,
-    background: "bg-white text-gray-800",
-    label: "Closed",
-  },
-];
+import AssignBugToDev from "./AssignBugToDev";
+import { defaultStatuses } from "~/utils/data";
+import { ProjectContext } from "~/context/ProjectDetailsContext";
 
 type StatusDropdownProps = {
   bugId: string;
