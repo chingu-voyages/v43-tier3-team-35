@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { Squares2X2Icon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import { Avatar, AvatarImage } from "~/components/Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/Avatar";
 import { api } from "~/utils/api";
 
 export default function Sidebar({
@@ -17,8 +17,8 @@ export default function Sidebar({
 }) {
   // eslint-disable-next-line
   const { data, isLoading, isError } = api.user.getLoggedUserDetails.useQuery();
-  if (isLoading) return <div className="">loading</div>;
 
+  if (isLoading) return <div className="">loading</div>;
   if (isError) return <div className="">error</div>;
 
   return (
@@ -58,6 +58,7 @@ export default function Sidebar({
       <div className="">
         <Avatar title="avatar">
           <AvatarImage src={loggedUser?.image ?? ""} />
+          <AvatarFallback>{loggedUser?.name}</AvatarFallback>
         </Avatar>
       </div>
     </div>
