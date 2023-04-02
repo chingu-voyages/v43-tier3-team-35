@@ -156,6 +156,12 @@ export default function ProjectDetails() {
                 )}
               </li>
             ))}
+            {data.developers.length === 0 && (
+              <li className="text-justify text-bodys leading-5 text-white text-opacity-75">
+                No developers are currently assigned to this project. To add a
+                developer, please click the &quot;Add Developer&quot; icon.
+              </li>
+            )}
           </SidebarCard>
         </div>
       </main>

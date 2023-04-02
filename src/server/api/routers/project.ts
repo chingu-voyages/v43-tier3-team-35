@@ -74,9 +74,7 @@ export const projectRouter = createTRPCRouter({
       }
     ),
   addDev: protectedProcedure
-    .input(
-      z.object({ email: z.string().email(), projectId: z.string().cuid() })
-    )
+    .input(z.object({ devId: z.string().cuid(), projectId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       const ownedProjects = await ctx.prisma.project.findMany({
         where: { ownerId: { equals: ctx.session.user.id } },
@@ -85,7 +83,7 @@ export const projectRouter = createTRPCRouter({
       if (ownedProjects.some((project) => project.id === input.projectId)) {
         return ctx.prisma.project.update({
           where: { id: input.projectId },
-          data: { developers: { connect: { email: input.email } } },
+          data: { developers: { connect: { id: input.devId } } },
         });
       }
       throw new TRPCError({
