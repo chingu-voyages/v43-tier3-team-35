@@ -1,20 +1,19 @@
 import React from "react";
 import Image from "next/image";
-import { Squares2X2Icon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { Squares2X2Icon } from "@heroicons/react/24/solid";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/Avatar";
 import { api } from "~/utils/api";
 import Link from "next/link";
 import { Command as CommandPrimitive } from "cmdk";
+import { CommandInput, CommandList } from "~/components/ui/command";
 import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-  CommandShortcut,
-} from "~/components/ui/command";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "~/components/ui/sheet";
 
 export default function Sidebar({
   loggedUser,
@@ -40,16 +39,31 @@ export default function Sidebar({
       </div>
       <div>
         <CommandPrimitive>
-          <CommandInput placeholder="Type a command or search..." />
+          <CommandInput placeholder="Quick Search..." />
           <CommandList></CommandList>
         </CommandPrimitive>
-
-        <MagnifyingGlassIcon className="h-6 w-6" />
       </div>
 
       <div className="text-gray-400">
-        Dashboard
-        <Squares2X2Icon className="h-6 w-6" />
+        <Link href="/dashboard" className="mb-2 flex gap-2">
+          <Squares2X2Icon className="h-6 w-6" />
+          Dashboard
+        </Link>
+      </div>
+      <div className="text-gray-400">
+        <Sheet>
+          <SheetTrigger>New project</SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Add New Project</SheetTitle>
+              <form>
+                <input type="text" /> Title
+                <input type="text" /> Invite developers
+                <button type="submit">Create project</button>
+              </form>
+            </SheetHeader>
+          </SheetContent>
+        </Sheet>
       </div>
       <div className="uppercase text-gray-400">
         My work ({data.assignedBugs.length})
@@ -59,7 +73,11 @@ export default function Sidebar({
           !isError &&
           data.assignedBugs.length > 0 &&
           data.assignedBugs.map((bug) => (
-            <Link key={bug.id} href={`/bug/${bug.id}`} className="flex">
+            <Link
+              key={bug.id}
+              href={`/bug/${bug.id}`}
+              className="mb-2 flex gap-2"
+            >
               <Image
                 priority
                 src="../bug.svg"
@@ -82,7 +100,7 @@ export default function Sidebar({
             <Link
               key={project.id}
               href={`/project/${project.id}`}
-              className="flex"
+              className="mb-2 flex gap-2"
             >
               <Image
                 priority

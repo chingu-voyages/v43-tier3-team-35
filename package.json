@@ -24,6 +24,7 @@
     "@trpc/next": "^10.18.0",
     "@trpc/react-query": "^10.18.0",
     "@trpc/server": "^10.18.0",
+    "class-variance-authority": "^0.5.1",
     "clsx": "^1.2.1",
     "cmdk": "^0.2.0",
     "date-fns": "^2.29.3",
