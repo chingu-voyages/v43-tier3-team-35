@@ -11,6 +11,14 @@ const STATUS = [
   "CLOSED",
 ] as const;
 
+
+const bugSchema = z.object({
+  title: z.string().min(5, { message: "Title is too short" }).max(100),
+  markdown: z.string(),
+  priority: z.string(),
+  projectId: z.string(),
+});
+
 export const bugRouter = createTRPCRouter({
   changeStatus: protectedProcedure
     .input(
@@ -82,6 +90,18 @@ export const bugRouter = createTRPCRouter({
         code: "UNAUTHORIZED",
       });
     }),
+  create: protectedProcedure.input(bugSchema).mutation(({ ctx, input }) => {
+    return ctx.prisma.bug.create({
+      data: {
+        ...input,
+        reportingUserId: ctx.session.user.id,
+      },
+      select: {
+        id: true,
+      }
+    }
+    );
+  }),
   getUnassignedTitles: protectedProcedure
     .input(z.object({ id: z.string().cuid() }))
     .query(({ ctx, input }) => {
