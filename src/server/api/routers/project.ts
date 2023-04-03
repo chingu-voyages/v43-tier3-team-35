@@ -73,6 +73,29 @@ export const projectRouter = createTRPCRouter({
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
     ),
+  addProject: protectedProcedure
+    .input(z.object({
+      name: z.string(),
+      developers: z.array(z.string().cuid())
+    }))
+    .mutation(async({ctx, input}) => {
+      const projectOwner = await ctx.prisma.user.findUniqueOrThrow({
+        where: {id: ctx.session.user.id}
+      })
+
+      console.log("================ OWNER: ==========", projectOwner);
+      console.log("=== INPUT: ", input);
+      console.log("=== CTX: ", ctx);
+      
+
+      // const project = await ctx.prisma.project.create({
+      //   data: {
+
+      //     owner: projectOwner
+
+      //   }
+      // })
+    }),
   addDev: protectedProcedure
     .input(z.object({ devId: z.string().cuid(), projectId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {

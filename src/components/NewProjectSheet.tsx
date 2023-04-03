@@ -18,9 +18,29 @@ type DeveloperType = {
 };
 
 export default function NewProjectSheet() {
+  const utils = api.useContext();
   const { data, isLoading, isError } = api.user.getAllDevelopers.useQuery();
   const [projectName, setProjectName] = useState("");
   const [developers, setDevelopers] = useState<DeveloperType[]>([]);
+
+  const { mutate: addMutate } = api.project.addProject.useMutation({
+    async onMutate(newProject) {
+      console.log("calling mutate function");
+
+      const proj = await utils.project.addProject.setData(
+        projectName,
+        developers.map((d) => d.id)
+      );
+
+      return;
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    addMutate({ developers: developers.map((d) => d.id), name: projectName });
+  };
 
   return (
     <Sheet>
@@ -29,9 +49,10 @@ export default function NewProjectSheet() {
         <SheetHeader>
           <SheetTitle>Add New Project</SheetTitle>
         </SheetHeader>
-        <form>
-          <input type="text" /> Title
-          <input type="text" /> Invite developers
+        <form onSubmit={(e) => handleSubmit(e)}>
+          <input type="text" onChange={(e) => setProjectName(e.target.value)} />{" "}
+          Title
+          <input type="text" placeholder="Enter an Email" /> Invite developers
           <button type="submit">Create project</button>
         </form>
 
