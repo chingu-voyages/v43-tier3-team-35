@@ -13,4 +13,19 @@ export const userRouter = createTRPCRouter({
       });
 
       return data;
+}), 
+  getAllDevelopers: protectedProcedure
+    .query(
+      async({ctx}) => {
+      const developers = await ctx.prisma.user.findMany({
+        select: {
+          id: true,
+          name: true,
+          image: true
+        }
+      });
+
+    console.log("all devs: ", developers);
+  
+    return developers;
 })})

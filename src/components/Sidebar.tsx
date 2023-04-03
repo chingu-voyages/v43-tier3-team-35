@@ -6,14 +6,7 @@ import { api } from "~/utils/api";
 import Link from "next/link";
 import { Command as CommandPrimitive } from "cmdk";
 import { CommandInput, CommandList } from "~/components/ui/command";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet";
+import NewProjectSheet from "./NewProjectSheet";
 
 export default function Sidebar({
   loggedUser,
@@ -26,7 +19,6 @@ export default function Sidebar({
       })
     | undefined;
 }) {
-  // eslint-disable-next-line
   const { data, isLoading, isError } = api.user.getLoggedUserDetails.useQuery();
 
   if (isLoading) return <div className="">loading</div>;
@@ -51,19 +43,7 @@ export default function Sidebar({
         </Link>
       </div>
       <div className="text-gray-400">
-        <Sheet>
-          <SheetTrigger>New project</SheetTrigger>
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Add New Project</SheetTitle>
-              <form>
-                <input type="text" /> Title
-                <input type="text" /> Invite developers
-                <button type="submit">Create project</button>
-              </form>
-            </SheetHeader>
-          </SheetContent>
-        </Sheet>
+        <NewProjectSheet />
       </div>
       <div className="uppercase text-gray-400">
         My work ({data.assignedBugs.length})
