@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { api } from "~/utils/api";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/Avatar";
 import PlusIcon from "@heroicons/react/24/outline/PlusIcon";
+import MinusIcon from "@heroicons/react/24/outline/MinusIcon";
 import {
   Sheet,
   SheetContent,
@@ -45,6 +46,14 @@ export default function NewProjectSheet() {
               </Avatar>
               {developer.name}
             </div>
+            <MinusIcon
+              onClick={() =>
+                setDevelopers([
+                  ...developers.filter((dev) => dev.id !== developer.id),
+                ])
+              }
+              className="h-6 w-6 cursor-pointer hover:opacity-50"
+            />
           </li>
         ))}
 
