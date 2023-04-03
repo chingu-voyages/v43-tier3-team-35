@@ -3,27 +3,9 @@ import type { Status } from "@prisma/client";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useSession } from "next-auth/react";
 import { api } from "~/utils/api";
-import { AssignBugToDev, ProjectContext } from "~/pages/project/[id]";
-
-const defaultStatuses = [
-  {
-    value: "UNASSIGNED" as Status,
-    label: "Unassigned",
-    background: "bg-slate-900",
-  },
-  { value: "TODO" as Status, label: "Todo", background: "bg-violet-800" },
-  {
-    value: "INPROGRESS" as Status,
-    background: "bg-sky-600",
-    label: "In Progress",
-  },
-  { value: "TESTING" as Status, background: "bg-teal-600", label: "Testing" },
-  {
-    value: "CLOSED" as Status,
-    background: "bg-white text-gray-800",
-    label: "Closed",
-  },
-];
+import AssignBugToDev from "./AssignBugToDev";
+import { defaultStatuses } from "~/utils/data";
+import { ProjectContext } from "~/context/ProjectDetailsContext";
 
 type StatusDropdownProps = {
   bugId: string;
@@ -42,10 +24,10 @@ const StatusDropdown = ({
   const { data: sessionData } = useSession();
   const { mutate } = api.bug.changeStatus.useMutation({
     async onMutate(newStatus) {
-      await utils.project.getDetailsById.cancel();
-      const pdPrevData = utils.project.getDetailsById.getData();
-      const ubPrevData = utils.project.getUnassignedBugsTitles.getData();
-      utils.project.getDetailsById.setData(queryVariables, (old) => {
+      await utils.project.getDetails.cancel();
+      const pdPrevData = utils.project.getDetails.getData();
+      const ubPrevData = utils.bug.getUnassignedTitles.getData();
+      utils.project.getDetails.setData(queryVariables, (old) => {
         if (old)
           return {
             ...old,
@@ -62,7 +44,7 @@ const StatusDropdown = ({
           };
       });
       if (newStatus.status === "UNASSIGNED")
-        utils.project.getUnassignedBugsTitles.setData(
+        utils.bug.getUnassignedTitles.setData(
           { id: queryVariables.id },
           (old) => {
             return (
@@ -71,7 +53,7 @@ const StatusDropdown = ({
           }
         );
       else if (status === "UNASSIGNED")
-        utils.project.getUnassignedBugsTitles.setData(
+        utils.bug.getUnassignedTitles.setData(
           { id: queryVariables.id },
           (old) => {
             return old && old.filter((bug) => bug.id !== newStatus.bugId);
@@ -80,15 +62,15 @@ const StatusDropdown = ({
       return { pdPrevData, ubPrevData };
     },
     onError(err, newStatus, ctx) {
-      utils.project.getDetailsById.setData(queryVariables, ctx?.pdPrevData);
-      utils.project.getUnassignedBugsTitles.setData(
+      utils.project.getDetails.setData(queryVariables, ctx?.pdPrevData);
+      utils.bug.getUnassignedTitles.setData(
         { id: queryVariables.id },
         ctx?.ubPrevData
       );
     },
     onSettled() {
-      void utils.project.getDetailsById.invalidate();
-      void utils.project.getUnassignedBugsTitles.invalidate();
+      void utils.project.getDetails.invalidate();
+      void utils.bug.getUnassignedTitles.invalidate();
     },
   });
   const readonly =
@@ -98,7 +80,7 @@ const StatusDropdown = ({
     ? defaultStatuses
     : defaultStatuses.filter((item) => item.value !== "CLOSED");
   const [open, setOpen] = useState(false);
-  const selectedStatusObject = Statuses?.find(
+  const selectedStatusObject = defaultStatuses?.find(
     (item) => item.value === status
   ) ?? {
     value: "UNASSIGNED" as const,
@@ -138,7 +120,7 @@ const StatusDropdown = ({
                   }}
                   className={`my-1 cursor-pointer text-center capitalize outline-none transition hover:text-gray-500`}
                 >
-                  {status.value.toLowerCase()}
+                  {status.label}
                 </DropdownMenu.RadioItem>
               ))}
             </DropdownMenu.RadioGroup>
@@ -148,17 +130,12 @@ const StatusDropdown = ({
     );
   return (
     <AssignBugToDev bugTitle={bugTitle} bugId={bugId}>
-      <button
-        disabled={readonly}
-        className={`rounded-[4px] ${
-          readonly ? "cursor-default" : "cursor-pointer"
-        } transition hover:bg-opacity-75 ${
-          selectedStatusObject.background
-        } options w-28 py-1.5 text-center
+      <span
+        className={`inline-block cursor-pointer rounded-[4px] transition hover:bg-opacity-75 ${selectedStatusObject.background} options text-centerz w-28 py-1.5
     text-sm capitalize`}
       >
         {selectedStatusObject.label}
-      </button>
+      </span>
     </AssignBugToDev>
   );
 };
