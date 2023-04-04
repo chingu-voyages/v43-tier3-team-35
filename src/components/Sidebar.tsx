@@ -25,10 +25,16 @@ export default function Sidebar({
   if (isError) return <div className="">error</div>;
 
   return (
-    <div className="w-full border-r border-sidebar-border bg-slate-800">
-      <div className="">
-        <Image priority src="../logo.svg" alt="logo" width={250} height={100} />
-      </div>
+    <div className="flex w-[60rem] flex-col border-r border-sidebar-border bg-slate-800">
+      <Image
+        priority
+        src="../logo.svg"
+        alt="logo"
+        width={132}
+        height={60}
+        className="m-0 mt-6 self-center"
+      />
+
       <div>
         <CommandPrimitive>
           <CommandInput placeholder="Quick Search..." />
@@ -36,70 +42,74 @@ export default function Sidebar({
         </CommandPrimitive>
       </div>
 
-      <div className="text-gray-400">
-        <Link href="/dashboard" className="mb-2 flex gap-2">
-          <Squares2X2Icon className="h-6 w-6" />
-          Dashboard
-        </Link>
-      </div>
-      <div className="text-gray-400">
-        <NewProjectSheet />
-      </div>
-      <div className="uppercase text-gray-400">
-        My work ({data.assignedBugs.length})
-      </div>
-      <div>
-        {!isLoading &&
-          !isError &&
-          data.assignedBugs.length > 0 &&
-          data.assignedBugs.map((bug) => (
-            <Link
-              key={bug.id}
-              href={`/bug/${bug.id}`}
-              className="mb-2 flex gap-2"
-            >
-              <Image
-                priority
-                src="../bug.svg"
-                alt="bug"
-                width={20}
-                height={20}
-              />{" "}
-              {bug.title}
+      <div className="flex h-full flex-col justify-between">
+        <div className="ml-4">
+          <div className="text-gray-400">
+            <Link href="/dashboard" className="mb-2 flex gap-2">
+              <Squares2X2Icon className="h-6 w-6" />
+              Dashboard
             </Link>
-          ))}
-      </div>
-      <div className="uppercase text-gray-400">
-        My projects ({data.ownedProjects.length})
-      </div>
-      <div>
-        {!isLoading &&
-          !isError &&
-          data.ownedProjects.length > 0 &&
-          data.ownedProjects.map((project) => (
-            <Link
-              key={project.id}
-              href={`/project/${project.id}`}
-              className="mb-2 flex gap-2"
-            >
-              <Image
-                priority
-                src="../project.svg"
-                alt="project"
-                width={20}
-                height={20}
-              />
-              {project.name}
-            </Link>
-          ))}
-      </div>
-      <div className="">
-        <Link href={"/dashboard"}>
-          <Avatar title="avatar">
-            <AvatarImage src={loggedUser?.image ?? ""} />
-            <AvatarFallback>{loggedUser?.name}</AvatarFallback>
-          </Avatar>
-        </Link>
+          </div>
+          <div className="text-gray-400">
+            <NewProjectSheet />
+          </div>
+          <div className="uppercase text-gray-400">
+            My work ({data.assignedBugs.length})
+          </div>
+          <div>
+            {!isLoading &&
+              !isError &&
+              data.assignedBugs.length > 0 &&
+              data.assignedBugs.map((bug) => (
+                <Link
+                  key={bug.id}
+                  href={`/bug/${bug.id}`}
+                  className="mb-2 flex gap-2"
+                >
+                  <Image
+                    priority
+                    src="../bug.svg"
+                    alt="bug"
+                    width={20}
+                    height={20}
+                  />{" "}
+                  {bug.title}
+                </Link>
+              ))}
+          </div>
+          <div className="uppercase text-gray-400">
+            My projects ({data.ownedProjects.length})
+          </div>
+          <div>
+            {!isLoading &&
+              !isError &&
+              data.ownedProjects.length > 0 &&
+              data.ownedProjects.map((project) => (
+                <Link
+                  key={project.id}
+                  href={`/project/${project.id}`}
+                  className="mb-2 flex gap-2"
+                >
+                  <Image
+                    priority
+                    src="../project.svg"
+                    alt="project"
+                    width={20}
+                    height={20}
+                  />
+                  {project.name}
+                </Link>
+              ))}
+          </div>
+        </div>
+        <div className="m-0 mb-6 self-center">
+          <Link href={"/dashboard"}>
+            <Avatar title="avatar">
+              <AvatarImage src={loggedUser?.image ?? ""} />
+              <AvatarFallback>{loggedUser?.name}</AvatarFallback>
+            </Avatar>
+          </Link>
+        </div>
       </div>
     </div>
   );
