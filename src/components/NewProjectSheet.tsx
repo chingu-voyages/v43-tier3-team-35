@@ -46,24 +46,41 @@ export default function NewProjectSheet() {
       <SheetTrigger>New project</SheetTrigger>
       <SheetContent className="rounded-tl-large rounded-bl-large bg-slate-700">
         <SheetHeader>
-          <h1 className="text-3xl text-white">Add New Project</h1>
+          <h1 className="mb-8 text-3xl text-white">Add New Project</h1>
         </SheetHeader>
         <div className="text-white">
           <form onSubmit={(e) => handleSubmit(e)}>
-            <div>Title</div>
+            <div className="text-sm">Title</div>
             <input
+              className="custom-input mb-6"
               type="text"
+              placeholder="Enter project name"
               onChange={(e) => setProjectName(e.target.value)}
             />
-            <div>Invite developers</div>
-            <input type="text" placeholder="Enter an Email" />
-            <button type="submit">Create project</button>
+            <div className="text-sm">Invite developers</div>
+            <div className="flex items-center gap-4">
+              <input
+                className="custom-input"
+                type="text"
+                placeholder="Enter an Email"
+              />
+
+              <button className="">Send Invite</button>
+            </div>
+            <button type="submit" className="btn-blue mt-5">
+              Create project
+            </button>
           </form>
 
-          <p>Developers list</p>
+          {developers.length > 0 && (
+            <p className="mb-3 mt-3">Developers list</p>
+          )}
 
           {developers.map((developer) => (
-            <li key={developer.id} className="flex justify-between text-bodym">
+            <li
+              key={developer.id}
+              className="mb-2 flex justify-between text-bodym"
+            >
               <div className="flex">
                 <Avatar className="mr-4 h-6 w-6">
                   <AvatarImage src={developer?.image ?? ""} />
@@ -82,7 +99,7 @@ export default function NewProjectSheet() {
             </li>
           ))}
 
-          <p>Team members previously added to projects</p>
+          <p className="mt-3 mb-3">Team members previously added to projects</p>
 
           {!isLoading &&
             !isError &&
@@ -96,7 +113,7 @@ export default function NewProjectSheet() {
               .map((developer) => (
                 <li
                   key={developer.id}
-                  className="flex justify-between text-bodym"
+                  className="mb-2 flex justify-between text-bodym"
                 >
                   <div className="flex">
                     <Avatar className="mr-4 h-6 w-6">
