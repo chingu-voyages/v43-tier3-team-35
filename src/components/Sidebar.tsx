@@ -42,18 +42,18 @@ export default function Sidebar({
         </CommandPrimitive>
       </div>
 
-      <div className="flex h-full flex-col justify-between">
+      <div className="flex h-full flex-col justify-between text-gray-400">
         <div className="ml-4">
-          <div className="text-gray-400">
+          <div className="">
             <Link href="/dashboard" className="mb-2 flex gap-2">
               <Squares2X2Icon className="h-6 w-6" />
               Dashboard
             </Link>
           </div>
-          <div className="text-gray-400">
+          <div className="">
             <NewProjectSheet />
           </div>
-          <div className="uppercase text-gray-400">
+          <div className="mt-5 text-hsb uppercase">
             My work ({data.assignedBugs.length})
           </div>
           <div>
@@ -64,7 +64,7 @@ export default function Sidebar({
                 <Link
                   key={bug.id}
                   href={`/bug/${bug.id}`}
-                  className="mb-2 flex gap-2"
+                  className="mb-2 mt-4 flex gap-2 text-bodym"
                 >
                   <Image
                     priority
@@ -77,7 +77,7 @@ export default function Sidebar({
                 </Link>
               ))}
           </div>
-          <div className="uppercase text-gray-400">
+          <div className="mt-5 text-hsb uppercase">
             My projects ({data.ownedProjects.length})
           </div>
           <div>
@@ -88,7 +88,7 @@ export default function Sidebar({
                 <Link
                   key={project.id}
                   href={`/project/${project.id}`}
-                  className="mb-2 flex gap-2"
+                  className="mb-2 mt-4 flex gap-2 text-bodym"
                 >
                   <Image
                     priority

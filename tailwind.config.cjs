@@ -30,6 +30,10 @@ const config = {
           },
         ],
         hxs: ["1.125rem", { fontWeight: 500, lineHeight: "1.40625rem" }],
+        hsb: [
+          "0.8125rem",
+          { fontWeight: 700, lineHeight: "1.0156rem", letterSpacing: "4px" },
+        ],
         bodym: ["0.9375rem", { fontWeight: 400, lineHeight: "1.171875rem" }],
         bodys: ["0.94rem", { fontWeight: 300, lineHeight: "1.015625rem" }],
       },
