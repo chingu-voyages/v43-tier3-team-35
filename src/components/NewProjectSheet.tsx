@@ -51,12 +51,18 @@ export default function NewProjectSheet() {
         <div className="text-white">
           <form onSubmit={(e) => handleSubmit(e)}>
             <div className="text-sm">Title</div>
-            <input
-              className="custom-input mb-6"
-              type="text"
-              placeholder="Enter project name"
-              onChange={(e) => setProjectName(e.target.value)}
-            />
+            <div className="mb-5 flex items-center gap-4">
+              <input
+                className="custom-input"
+                type="text"
+                placeholder="Enter project name"
+                onChange={(e) => setProjectName(e.target.value)}
+              />
+              <button type="submit" className="btn-blue whitespace-nowrap">
+                Create project
+              </button>
+            </div>
+
             <div className="text-sm">Invite developers</div>
             <div className="flex items-center gap-4">
               <input
@@ -64,12 +70,10 @@ export default function NewProjectSheet() {
                 type="text"
                 placeholder="Enter an Email"
               />
-
-              <button className="">Send Invite</button>
+              <button className="btn-blue whitespace-nowrap">
+                Send Invite
+              </button>
             </div>
-            <button type="submit" className="btn-blue mt-5">
-              Create project
-            </button>
           </form>
 
           {developers.length > 0 && (
