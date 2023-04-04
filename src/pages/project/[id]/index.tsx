@@ -61,11 +61,11 @@ export default function ProjectDetails() {
         projectOwnerId: data.owner.id,
       }}
     >
-      <div className="flex">
+      <main className="flex">
         <Sidebar loggedUser={sessionData?.user} />
-        <main className="grid min-h-screen grid-cols-5 gap-x-8 p-11">
+        <div className="grid min-h-screen grid-cols-5 gap-x-8 p-11">
           <div className="col-span-4">
-            <div className="flex items-center justify-between rounded-xl bg-slate-800 px-6 py-5">
+            <div className="rounded-xl flex items-center justify-between bg-slate-800 px-6 py-5">
               <div className="flex items-center justify-between gap-6">
                 <h1 className="text-hm font-medium">{data.name}</h1>
                 <SortDropdown sort={sortBy} setSort={setSortBy} />
@@ -176,8 +176,8 @@ export default function ProjectDetails() {
               )}
             </SidebarCard>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </ProjectContext.Provider>
   );
 }
