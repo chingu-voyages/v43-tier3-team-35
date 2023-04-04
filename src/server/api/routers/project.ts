@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { map } from "@trpc/server/observable";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -79,17 +80,15 @@ export const projectRouter = createTRPCRouter({
       developers: z.array(z.string().cuid())
     }))
     .mutation(async({ctx, input}) => {
-      const projectOwner = await ctx.prisma.user.findUniqueOrThrow({
-        where: {id: ctx.session.user.id}
-      })
-
-      console.log("================ OWNER: ==========", projectOwner);
-      console.log("=== INPUT: ", input);
-
-      const project = await ctx.prisma.project.create({
+      return await ctx.prisma.project.create({
         data: {
           ownerId: ctx.session.user.id,
-          name: input.name
+          name: input.name,
+          developers: {
+            connect: [
+              ...input.developers.map(dev => ({id: dev}))
+            ]
+          }
         }
       })
 
