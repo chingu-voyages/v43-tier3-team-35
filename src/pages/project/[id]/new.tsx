@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useRouter } from "next/router";
+import type { Priority } from "@prisma/client";
 
 const statuses = [
   { value: "LOW", label: "Low" },
@@ -39,7 +40,7 @@ const statuses = [
 type Inputs = {
   title: string;
   markdown: string;
-  priority: string;
+  priority: Priority;
   projectId: string;
 };
 
