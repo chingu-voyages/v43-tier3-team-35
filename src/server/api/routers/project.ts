@@ -85,16 +85,15 @@ export const projectRouter = createTRPCRouter({
 
       console.log("================ OWNER: ==========", projectOwner);
       console.log("=== INPUT: ", input);
-      console.log("=== CTX: ", ctx);
-      
 
-      // const project = await ctx.prisma.project.create({
-      //   data: {
+      const project = await ctx.prisma.project.create({
+        data: {
+          ownerId: ctx.session.user.id,
+          name: input.name
+        }
+      })
 
-      //     owner: projectOwner
 
-      //   }
-      // })
     }),
   getTitles: protectedProcedure.query(async ({ ctx }) => {
     return ctx.prisma.project.findMany({
