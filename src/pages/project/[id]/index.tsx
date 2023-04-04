@@ -21,6 +21,7 @@ import { getNameLetters } from "~/lib/utils";
 import { UserPlusIcon } from "@heroicons/react/24/solid";
 import ProjectDevsSettings from "~/components/ProjectDevsSettings";
 import Sidebar from "~/components/Sidebar";
+import Link from "next/link";
 
 export default function ProjectDetails() {
   const {
@@ -55,7 +56,7 @@ export default function ProjectDetails() {
   return (
     <ProjectContext.Provider
       value={{
-        projectDevelopers: data.developers,
+        projectDevelopers: [...data.developers, data.owner],
         queryVariables,
         projectOwnerId: data.owner.id,
       }}
@@ -69,10 +70,14 @@ export default function ProjectDetails() {
                 <h1 className="text-hm font-medium">{data.name}</h1>
                 <SortDropdown sort={sortBy} setSort={setSortBy} />
               </div>
-              <button className="rounded-md bg-blue-900 px-5 py-3 text-bodym font-medium text-white transition duration-300 hover:bg-white hover:text-blue-900">
+              <Link
+                href={`./${id as string}/new`}
+                className="rounded-md bg-blue-900 px-5 py-3 text-bodym font-medium text-white transition duration-300 hover:bg-white hover:text-blue-900"
+              >
                 Report New Bug
-              </button>
+              </Link>
             </div>
+
             {data.bugs.length > 0 ? (
               <div className="mt-4 grid grid-cols-3 gap-x-5 gap-y-5">
                 {data.bugs.map((bug) => (
