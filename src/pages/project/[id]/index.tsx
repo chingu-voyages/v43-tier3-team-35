@@ -55,7 +55,7 @@ export default function ProjectDetails() {
   return (
     <ProjectContext.Provider
       value={{
-        projectDevelopers: data.developers,
+        projectDevelopers: [...data.developers, data.owner],
         queryVariables,
         projectOwnerId: data.owner.id,
       }}
