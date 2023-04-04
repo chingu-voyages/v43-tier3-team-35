@@ -28,7 +28,7 @@ model Project {
 
 model Bug {
     id                String    @id @default(cuid())
-    summary           String?
+    title             String
     markdown          String
     priority          Priority
     status            Status    @default(UNASSIGNED)
@@ -100,7 +100,6 @@ model Session {
 model User {
     id                  String    @id @default(cuid())
     name                String?
-    username            String    @unique
     email               String?   @unique
     emailVerified       DateTime?
     image               String?
