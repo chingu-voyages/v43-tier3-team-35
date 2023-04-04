@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { allSortingTypes, getBugSort } from "~/utils/sorting";
 
-const PRIORITY = ["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const;
+export const PRIORITY = ["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const;
 const STATUS = [
   "UNASSIGNED",
   "TODO",

@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { PRIORITY } from "./project";
 
 const STATUS = [
   "UNASSIGNED",
@@ -11,12 +12,11 @@ const STATUS = [
   "CLOSED",
 ] as const;
 
-
 const bugSchema = z.object({
   title: z.string().min(5, { message: "Title is too short" }).max(100),
   markdown: z.string(),
-  priority: z.string(),
-  projectId: z.string(),
+  priority: z.enum(PRIORITY),
+  projectId: z.string().cuid(),
 });
 
 export const bugRouter = createTRPCRouter({
@@ -98,9 +98,8 @@ export const bugRouter = createTRPCRouter({
       },
       select: {
         id: true,
-      }
-    }
-    );
+      },
+    });
   }),
   getUnassignedTitles: protectedProcedure
     .input(z.object({ id: z.string().cuid() }))
