@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { map } from "@trpc/server/observable";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -73,6 +74,26 @@ export const projectRouter = createTRPCRouter({
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
     ),
+  addProject: protectedProcedure
+    .input(z.object({
+      name: z.string(),
+      developers: z.array(z.string().cuid())
+    }))
+    .mutation(async({ctx, input}) => {
+      return await ctx.prisma.project.create({
+        data: {
+          ownerId: ctx.session.user.id,
+          name: input.name,
+          developers: {
+            connect: [
+              ...input.developers.map(dev => ({id: dev}))
+            ]
+          }
+        }
+      })
+
+
+    }),
   getTitles: protectedProcedure.query(async ({ ctx }) => {
     return ctx.prisma.project.findMany({
       where: {
