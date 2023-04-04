@@ -26,7 +26,7 @@ const config = {
       },
     },
   },
-  plugins: [require("@tailwindcss/line-clamp")],
+  plugins: [require("@tailwindcss/line-clamp"), require("tailwindcss-animate")],
 };
 
 module.exports = config;

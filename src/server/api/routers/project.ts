@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { allSortingTypes, getBugSort } from "~/utils/sorting";
 
-const PRIORITY = ["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const;
+export const PRIORITY = ["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const;
 const STATUS = [
   "UNASSIGNED",
   "TODO",
@@ -73,6 +73,20 @@ export const projectRouter = createTRPCRouter({
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
     ),
+  getTitles: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.prisma.project.findMany({
+      where: {
+        OR: [
+          { owner: { id: { equals: ctx.session.user.id } } },
+          { developers: { some: { id: ctx.session.user.id } } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+  }),
   addDev: protectedProcedure
     .input(z.object({ devId: z.string().cuid(), projectId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
