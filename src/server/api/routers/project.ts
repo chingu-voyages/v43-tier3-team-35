@@ -73,17 +73,19 @@ export const projectRouter = createTRPCRouter({
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
     ),
-  getAll: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.prisma.project.findMany(
-      {
-        where: {
-          OR: [
-            { owner: { id: { equals: ctx.session.user.id } } },
-            { developers: { some: { id: ctx.session.user.id } } },
-          ]
-        }
-      }
-    );
+  getTitles: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.prisma.project.findMany({
+      where: {
+        OR: [
+          { owner: { id: { equals: ctx.session.user.id } } },
+          { developers: { some: { id: ctx.session.user.id } } },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
   }),
   addDev: protectedProcedure
     .input(z.object({ devId: z.string().cuid(), projectId: z.string().cuid() }))
